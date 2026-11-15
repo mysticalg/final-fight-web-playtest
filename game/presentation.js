@@ -1,4 +1,4 @@
-import{drawStageArt}from'./stage-art.js?v=21ea355a4c';
+import{drawStageArt}from'./stage-art.js?v=683f011c56';
 // Displays converted PNG assets. No ROM data or CPU runtime is loaded.
 export class Presentation {
   constructor(data, background, sprites) { this.data = data; this.background = background; this.sprites = sprites; }

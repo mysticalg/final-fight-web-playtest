@@ -1,4 +1,4 @@
-import{Animation}from'./animation.js?v=21ea355a4c';
+import{Animation}from'./animation.js?v=683f011c56';
 const word=value=>value<<16>>16;
 export function containerDrop(data,prop,random,pressedInput=0){
   let item=prop.parameter??255;
@@ -30,7 +30,7 @@ export class Prop{
     if(this.mode==='removePending'){this.mode='removed';this.removed=true;this.visible=false;return;}
     if(this.mode==='init'){this.mode='intact';return;}
     if(this.mode==='intact'){
-      if(this.health<0){this.mode='breakPending';this.direction=this.hitFrom;if(this.subtype!==8)this.facing=this.direction;this.visible=this.screen(world);this.drawn=this.visible;if(this.subtype===1&&this.owner<0)this.sound(24);return;}
+      if(this.health<0){this.mode='breakPending';this.direction=this.hitFrom;if(![4,8].includes(this.subtype))this.facing=this.direction;this.visible=this.screen(world);this.drawn=this.visible;if(this.subtype===1&&this.owner<0)this.sound(24);return;}
       if(this.subtype===1&&this.appearance===7){
         if(!this.hopStep){this.hopStep=1;this.hopTimer=68;}
         else if(this.hopStep===1){if(this.hopTimer){if(!--this.hopTimer){this.vx=-0x300;this.vy=0x300;}}else{this.integrate();if((this.y>>16)<=(this.groundY>>16)){this.y=this.groundY;this.vx=-0x200;this.drag=-32;this.hopStep=2;}}}
@@ -40,10 +40,10 @@ export class Prop{
       this.visible=this.screen(world);this.drawn=this.visible;return;
     }
     if(this.mode==='breakPending'){
-      this.mode='breaking';this.breakStep=this.subtype===8?'stationary':'flight';this.breakTimer=this.subtype===5?70:50;
-      this.vx=(this.subtype===1?0x400:0x600)*(this.direction?-1:1);this.vy=this.subtype===1?0x300:0x800;this.collisionWait=0;
+      this.mode='breaking';this.breakStep=[4,8].includes(this.subtype)?'stationary':'flight';this.breakTimer=this.subtype===5?70:50;
+      this.vx=([1,6].includes(this.subtype)?0x400:0x600)*(this.direction?-1:1);this.vy=[1,6].includes(this.subtype)?0x300:0x800;this.collisionWait=0;
       this.animation.set(this.character.actions.broken);
-      if(this.subtype===8){const phase=world.random.next()&3;world.spawnDebris?.(this,phase);if(this.owner<0)this.sound(22);else world.awardScore?.(21,this.owner);}
+      if([4,6,8].includes(this.subtype)){const phase=world.random.next()&3;world.spawnDebris?.(this,phase);if(this.owner<0)this.sound(this.subtype===8?22:23);else world.awardScore?.(this.subtype===8?21:this.subtype===4?7:18,this.owner);}
       else if(this.subtype===5){if(this.owner<0)this.sound(24);else world.awardScore?.(16,this.owner);}
       else if(!this.appearance&&this.owner>=0)world.awardScore?.(33,this.owner);
       if(this.subtype!==1||this.appearance<2){const drop=containerDrop(this.data,this,world.random,world.pressedInput??0);if(drop)world.dropItem?.(drop,this);}

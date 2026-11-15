@@ -12,8 +12,8 @@ export function updateReaction(player,input,pressed,previous=0) {
     if((player.y>>16)!==(player.groundY>>16))player.reaction=3;
     if(player.health<0||player.reaction===3) {
       player.mode='knockdownInit';player.action('fall');
-    } else if(player.reaction===0||player.reaction===1) {
-      player.mode='hurt';player.action(player.reaction===1?'hurt1':'hurt');
+    } else if(player.reaction===0||player.reaction===1||player.reaction===2) {
+      player.mode='hurt';player.action(player.reaction!==0?'hurt1':'hurt');
     } else throw new Error(`Player reaction ${player.reaction} is not recovered`);
     return true;
   }
@@ -65,3 +65,4 @@ export function updateReaction(player,input,pressed,previous=0) {
   }
   return false;
 }
+

@@ -1,5 +1,5 @@
-import {Animation} from './animation.js?v=21ea355a4c';
-import{faceTarget}from'./enemy-ai.js?v=21ea355a4c';
+import {Animation} from './animation.js?v=683f011c56';
+import{faceTarget}from'./enemy-ai.js?v=683f011c56';
 const word = value => value << 16 >> 16;
 
 // Actor with an optional recovered Bred controller. Leaving brain unset selects
@@ -14,6 +14,10 @@ export class Enemy {
   }
   action(name) { this.animation.set(this.character.actions[name]); this.imageOffset=0; }
   sound(command) { if(command!==null&&command!==undefined)this.onSound?.(command); }
+  releaseGuard(world){
+    if(this.character.family!==2)return;
+    const rules=this.brain?.rules??this.character.ai;this.guardContact=false;this.guardReady=rules.guardRoll[world.random.next()&31]<rules.guardChance;
+  }
   hit(damage,reaction,facing) {
     this.health=word(this.health-damage); this.reaction=reaction; this.hitFrom=facing;
     this.hitStop=6; this.hitLatch=true; this.pendingReaction=true;
@@ -43,7 +47,7 @@ export class Enemy {
       this.visible=(((world?.frame??0)+(world?.actorPhase??0))&3)!==0;return;
     }
     if(this.mode==='releasedFallPending'){
-      this.speedX=this.speedY=0;this.vx=this.vy=0;this.mode='releasedFall';this.action(this.character.actions.releasedFall?'releasedFall':'neutral');return;
+      this.speedX=this.speedY=0;this.vx=this.vy=0;this.mode='releasedFall';this.action(this.character.actions.releasedFall?'releasedFall':'neutral');this.releaseGuard(world);return;
     }
     if(this.mode==='releasedFall'){
       this.integrate();if((this.y>>16)<=(this.groundY>>16)){this.y=this.groundY;this.mode='releasedFloorWait';this.releaseTimer=20;}return;
@@ -52,6 +56,7 @@ export class Enemy {
       if(!--this.releaseTimer){this.mode='neutral';if(this.brain)this.brain.seek(world);else this.action('neutral');}return;
     }
     if(this.mode==='releasedPending'){
+      this.releaseGuard(world);
       this.speedX=this.speedY=0;this.releaseTimer=(this.character.releaseWait??this.data.grabs.releaseWait)[world.random.next()&31];this.mode='releasedWait';this.action('neutral');
       if(((world.frame+(world.actorPhase??0))&7)===0)faceTarget(this,target);return;
     }
@@ -141,6 +146,7 @@ export class Enemy {
       return;
     }
     if(this.mode==='recoverInit') {
+      this.releaseGuard(world);
       this.speedX=this.speedY=0;this.groundY=this.y;
       this.recoveryTimer=this.character.recoveryWait[world.random.next()&31];this.mode='recoverWait';return;
     }

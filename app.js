@@ -1,7 +1,7 @@
-import {StreetWorld} from './game/street-world.js?v=21ea355a4c';
-import {Presentation} from './game/presentation.js?v=21ea355a4c';
-import {readGamepad} from './game/gamepad.js?v=21ea355a4c';
-import {GameAudio} from './game/audio.js?v=21ea355a4c';
+import {StreetWorld} from './game/street-world.js?v=683f011c56';
+import {Presentation} from './game/presentation.js?v=683f011c56';
+import {readGamepad} from './game/gamepad.js?v=683f011c56';
+import {GameAudio} from './game/audio.js?v=683f011c56';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -88,12 +88,12 @@ function step() {
 function draw() {
   presentation.draw(context,player,encounter.actors,encounter.view);
   status.textContent = `${player.character.name} · HP ${Math.max(0,player.health)}/${player.character.health} · ${encounter.lives} lives${paused?' · paused':''}`;
-  document.querySelector('#combat-status').textContent=encounter.gameOver?'GAME OVER':`SLUM · STREET${enemy?' · '+enemy.character.name+' '+Math.max(0,enemy.health)+'/'+(enemy.maxHealth??enemy.character.health):''}`;
+  document.querySelector('#combat-status').textContent=encounter.gameOver?'GAME OVER':`SLUM · ${['STREET','ROOM'][encounter.sectionIndex]}${encounter.cleared?' · GO →':''}${enemy?' · '+enemy.character.name+' '+Math.max(0,enemy.health)+'/'+(enemy.maxHealth??enemy.character.health):''}`;
   document.querySelector('#continue').hidden=!encounter.gameOver;
 
 }
 try {
-  const metadata = await fetch('./assets/game.json?v=21ea355a4c');
+  const metadata = await fetch('./assets/game.json?v=683f011c56');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
   audio=new GameAudio(data.audio,{onState:state=>{
@@ -103,6 +103,7 @@ try {
   }});
   audio.setHidden(document.hidden);audioButton.disabled=false;
   presentation = await Presentation.load(data);
+  await presentation.loadStage('0:1');
   reset(); draw();
   let previous = performance.now(), accumulator = 0;
   // CPS-1 cadence is approximately 59.64 Hz, not display refresh dependent.

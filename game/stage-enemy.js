@@ -1,6 +1,6 @@
-import{Enemy}from'./enemy.js?v=21ea355a4c';
-import{createEnemyBrain}from'./j-brain.js?v=21ea355a4c';
-import{faceTarget}from'./enemy-ai.js?v=21ea355a4c';
+import{Enemy}from'./enemy.js?v=683f011c56';
+import{createEnemyBrain}from'./j-brain.js?v=683f011c56';
+import{faceTarget}from'./enemy-ai.js?v=683f011c56';
 const word=n=>n<<16>>16;
 
 // Original family 0/1 initialization and ordinary parameter 0–3 entry waits.
@@ -12,14 +12,33 @@ export class StageEnemy extends Enemy{
     if(stats){this.health=stats.health;this.defenseIndex=stats.defenseIndex;this.combat={...this.combat,damage:stats.damage};}this.maxHealth=this.health;
     this.brain=createEnemyBrain(this);
     if(this.character.aiLevels)this.brain.rules={...this.brain.rules,...Object.fromEntries(Object.entries(this.character.aiLevels).map(([k,v])=>[k,v[level]]))};
-    if(parameter>3&&!(parameter===7&&!this.character.family))throw new Error(`Stage enemy entry parameter ${parameter} is not translated`);
+    if(!this.character.entry.supportedParameters.includes(parameter))throw new Error(`Stage enemy entry parameter ${parameter} is not translated`);
   }
   finishEntry(world,target){this.mode='neutral';this.brain.seek(world);faceTarget(this,target,true);}
+  action(name){
+    const root=this.character.poseActions?.[name]?.[this.pose??0];
+    if(root!==undefined){this.animation.set(root);this.imageOffset=0;}else super.action(name);
+  }
+  hit(damage,reaction,facing,{unblockable=false}={}){
+    if(this.character.family!==2)return super.hit(damage,reaction,facing);
+    this.guardContact=true;this.hitFrom=facing;this.hitStop=6;this.hitLatch=true;
+    if(unblockable||reaction===7)this.guardReady=false;
+    if(!this.guardReady)super.hit(damage,reaction,facing);
+  }
+  update(world,target){
+    this.updateState(world,target);
+    if(this.character.family===2&&this.guardContact){
+      if(this.guardReady){this.hitStop=0;if(this.brain.state!=='guard'){this.facing=this.hitFrom^1;this.mode='neutral';this.brain.state='guard';this.brain.phase=0;}this.pendingReaction=false;}
+      else if(this.pendingReaction)this.startReaction();
+      if(this.brain.state==='guard'){this.guardContact=false;this.guardReady=true;}else this.brain.rollGuard(world);
+    }else if(this.pendingReaction)this.startReaction();
+  }
   updateState(world,target){
     this.contactsReady=!(this.mode==='entry'&&['init','windowWait'].includes(this.entryStep));
     if(this.mode!=='entry'){this.drawn=true;return super.updateState(world,target);}
     if(this.entryStep==='init'){
       this.blockedTimer=this.character.entry.blockedWait[world.random.next()&15];this.entryStep=this.parameter===7?'windowWait':'pose';
+      if(this.character.family===2)this.brain.rollGuard(world);
       if(this.parameter===7){this.entryTimer=this.character.entry.window.waits[this.spawnDirection];this.facing=this.direction=0;}
       this.drawn=false;return;
     }
@@ -46,3 +65,4 @@ export class StageEnemy extends Enemy{
     this.visible=(((this.x>>16)-(world.cameraX??96)+48)&65535)<=480&&(((this.y>>16)-(world.cameraY??0)+128)&65535)<=384;this.drawn=this.visible;
   }
 }
+

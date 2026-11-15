@@ -37,7 +37,7 @@ export function contact(data,player,enemy,{queued=false}={}) {
   const special=player.mode.startsWith('escape');
   if(enemy.isProp){
     if(player.floorOffset)return false;
-    if(enemy.subtype!==1||enemy.appearance<2){const range=enemy.subtype===1?8:enemy.subtype===8?16:10;if(depth<(special?-range:0)||depth>range*(special?2:1))return false;}
+    if(enemy.subtype!==1||enemy.appearance<2){const range=enemy.subtype===1?8:[4,6,8].includes(enemy.subtype)?16:10;if(depth<(special?-range:0)||depth>range*(special?2:1))return false;}
   }else if(dx>256||depth < (special?-24:-12)||depth > (special?24:9))return false;
   const attack=resolveBoxes(player,image).attack;
   const hurt=resolveBoxes(enemy,data.images[enemy.animation.image]).hurt;
@@ -45,9 +45,9 @@ export function contact(data,player,enemy,{queued=false}={}) {
   // 007330: latch, damage, orientation and six-frame attacker/victim hit-stop.
   let hitFrom=special?(((player.x>>16)&65535)>((enemy.x>>16)&65535)?1:0):player.facing;
   if(enemy.isProp&&!special&&player.characterIndex===2&&image.attackIndex===14)hitFrom^=1;
-  enemy.hit(attackDamage(player.combat,attack,enemy.defenseIndex),attack.reaction,hitFrom);
-  if(enemy.isProp){enemy.owner=player.playerIndex??0;player.sound?.(enemy.subtype===8?22:24);player.hitStop=6;if(enemy.subtype!==1||enemy.appearance<2){player.comboWindow=45;player.escapeHit=true;}return true;}
-  player.sound?.(attack.sound);
+  enemy.hit(attackDamage(player.combat,attack,enemy.defenseIndex),attack.reaction,hitFrom,{unblockable:attack.unblockable});
+  if(enemy.isProp){enemy.owner=player.playerIndex??0;player.sound?.(enemy.subtype===8?22:[4,6].includes(enemy.subtype)?23:24);player.hitStop=6;if(enemy.subtype!==1||enemy.appearance<2){player.comboWindow=45;player.escapeHit=true;}return true;}
+  if(!(enemy.character.family===2&&enemy.guardReady))player.sound?.(attack.sound);
   player.hitStop=6;
   player.comboWindow=45;
   if(special)player.escapeHit=true;
@@ -89,3 +89,5 @@ export function incomingContact(data,enemy,player,{queued=false}={}) {
   enemy.hitStop=6;
   return true;
 }
+
+
