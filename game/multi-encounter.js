@@ -1,9 +1,9 @@
-import {Encounter}from'./encounter.js';
-import {Enemy}from'./enemy.js';
-import {BredBrain}from'./bred-brain.js';
-import {GrabPair}from'./grabs.js';
-import {contact,incomingContact,canGrab,canComboThrow}from'./combat.js';
-import{CollisionGrid}from'./collision.js';
+import {Encounter}from'./encounter.js?v=8e52b06854';
+import {Enemy}from'./enemy.js?v=8e52b06854';
+import {BredBrain}from'./bred-brain.js?v=8e52b06854';
+import {GrabPair}from'./grabs.js?v=8e52b06854';
+import {contact,incomingContact,canGrab,canComboThrow}from'./combat.js?v=8e52b06854';
+import{CollisionGrid}from'./collision.js?v=8e52b06854';
 
 // Original actor order and deferred contact application (8C80 / 3348 / 6F2E).
 // This bounded crowd fixture is separate from stage-driven spawn/progression.

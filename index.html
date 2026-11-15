@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Final Fight — native JavaScript</title>
-<link rel="stylesheet" href="style.css?v=1dbaf40537">
+<link rel="stylesheet" href="style.css?v=8e52b06854">
 <main>
 <header><h1>FINAL FIGHT</h1><p>Native JavaScript · Crowd combat build</p></header>
 <div class="toolbar"><label>Character <select id="character"><option>Guy</option><option>Cody</option><option>Haggar</option></select></label><label>Enemy <select id="enemy"><option>Bred</option><option>Dug</option><option>Jake</option><option>Simons</option></select></label><button id="reset">Reset position</button><button id="pause">Pause</button></div>
@@ -18,5 +18,6 @@
 <p class="controls">Controller: stick/D-pad move · A/Cross punch · B/Circle jump · LB/RB character · Start pause · Back/Select reset</p>
 <p class="scope">Bred, Dug, Jake and Simons use recovered health, defense and attack scripts, including leaping attacks. Land hits and press Z again to continue a standing combo. Walk into the enemy to grab; Z knees, a horizontal direction+Z throws, and X releases into a jump. Haggar carries after lifting: X then Z performs a piledriver. Back+Z on a combo finisher throws. Z+X or C escapes for eight HP when it hits; whiffs are free. Enable audio plays the original Slum music and recovered combat cues. Reset restarts the encounter. Crowd encounter pits you against Bred, Dug and Jake together; the single-enemy modes remain available. This remains a fixed-screen combat test. Stage entry, walls, other enemy families, weapons, props, lives/respawn, progression and additional audio remain unfinished.</p>
 </main>
-<script type="module" src="app.js?v=1dbaf40537"></script>
+<script>window.addEventListener('error',event=>console.error('Game startup/runtime error:',event.message||'module resource failed',event.filename||''));</script>
+<script type="module" src="app.js?v=8e52b06854" onerror="document.querySelector('#status').textContent='Game code could not load. Reload the page to retry.'"></script>
 </html>
