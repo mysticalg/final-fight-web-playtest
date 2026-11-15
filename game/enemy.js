@@ -1,11 +1,11 @@
-import {Animation} from './animation.js?v=f02d1b8759';
+import {Animation} from './animation.js?v=47e20c535b';
 const word = value => value << 16 >> 16;
 
 // Actor with an optional recovered Bred controller. Leaving brain unset selects
 // the stationary research target; reaction states translate original handlers.
 export class Enemy {
-  constructor(data, x, y, facing=1) {
-    this.data=data; this.character=data.enemies[0]; this.combat=this.character.combat;
+  constructor(data, x, y, facing=1,variant=0) {
+    this.variant=variant;this.data=data; this.character=data.enemies[variant]; this.combat=this.character.combat;
     this.x=x; this.y=this.groundY=y; this.facing=facing;
     this.health=this.character.health; this.defenseIndex=this.character.defenseIndex;
     this.mode='neutral'; this.hitStop=0; this.hitLatch=false; this.imageOffset=0;
@@ -50,13 +50,14 @@ export class Enemy {
     if(this.mode==='hurtPending') {
       // 0272E8 / 027334 / 02734A / 0273D2: first punches use types zero/one.
       this.facing=this.hitFrom^1; this.direction=this.hitFrom;
-      if(this.reaction===5||this.reaction===6){
-        if(this.reaction===6)this.direction^=1;
+      const reaction=(this.y>>16)!==(this.groundY>>16)&&this.reaction!==8?3:this.reaction;
+      if(reaction===5||reaction===6){
+        if(reaction===6)this.direction^=1;
         this.mode='slamInit';this.action('grabFall');return;
       }
-      if(this.health<0||this.reaction===3||this.reaction===7) {
+      if(this.health<0||reaction===3||reaction===7) {
         this.y=(this.y+52*65536)|0; this.mode='fallInit'; this.action('fall');
-      } else { this.mode='hurt'; this.action(this.reaction===1||this.reaction===2?'hurt1':'hurt'); }
+      } else { this.mode='hurt'; this.action(reaction===1||reaction===2?'hurt1':'hurt'); }
       return;
     }
     if(this.mode==='hurt') {
@@ -88,7 +89,7 @@ export class Enemy {
     }
     if(this.mode==='slamSlide') {
       this.animation.tick();const next=word(this.vx-this.drag);this.vx=(this.vx>=0)===(next>=0)?next:0;this.x=(this.x+this.vx*256)|0;
-      if(!this.vx){this.mode=this.health<0?'defeated':'recoverInit';if(this.brain)this.brain.release(world);}return;
+      if(!this.vx){this.mode=this.health<0?'defeated':'recoverInit';if(this.health>=0&&this.brain)this.brain.release(world);}return;
     }
     if(this.mode==='fallInit') {
       this.vy=this.health<0?0x300:0x380;

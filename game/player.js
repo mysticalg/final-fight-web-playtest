@@ -1,7 +1,7 @@
-import {Animation} from './animation.js?v=f02d1b8759';
-import {receiveHit,updateReaction} from './player-reaction.js?v=f02d1b8759';
-import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=f02d1b8759';
-import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=f02d1b8759';
+import {Animation} from './animation.js?v=47e20c535b';
+import {receiveHit,updateReaction} from './player-reaction.js?v=47e20c535b';
+import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=47e20c535b';
+import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=47e20c535b';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
 // Movement, jump/landing and standing attacks. Contact, grabs and damage

@@ -1,4 +1,4 @@
-import {advanceApproach,reachedPosition,faceTarget} from './enemy-ai.js?v=f02d1b8759';
+import {advanceApproach,reachedPosition,faceTarget} from './enemy-ai.js?v=47e20c535b';
 const word=value=>value<<16>>16;
 
 // Bred family zero, one-player/no-wall encounter controller. Source: 021FC4,
@@ -125,7 +125,18 @@ export class BredBrain {
         if(--this.wait===0)this.phase=0;
         if(periodic)faceTarget(actor,target);return;
       }
-      const action={6:'jab',8:'kick',16:'uppercut'}[this.phase];
+      if(this.phase===18){
+        if(!this.attackStep){this.attackStep=2;actor.action('leapStart');return;}
+        actor.animation.tick();
+        if(this.attackStep===2){
+          if(actor.animation.flags){this.attackStep=4;actor.groundY=actor.y;actor.direction=actor.facing;actor.vy=0x780;actor.vx=0x280*(actor.facing?-1:1);actor.drag=5*(actor.facing?-1:1);}
+        } else if(this.attackStep===4){
+          actor.vy=word(actor.vy-0x66);actor.vx=word(actor.vx-actor.drag);actor.x=(actor.x+actor.vx*256)|0;actor.y=(actor.y+actor.vy*256)|0;
+          if((actor.y>>16)<=(actor.groundY>>16)){actor.y=actor.groundY;this.attackStep=6;actor.action('leapLand');}
+        } else if(actor.animation.flags&128){this.phase=0;actor.running=true;actor.action('run');}
+        return;
+      }
+      const action={6:'jab',8:'kick',10:'strike',12:'strikeFinish',14:'swing',16:'uppercut'}[this.phase];
       if(!action)throw new Error(`Bred attack phase ${this.phase} is not recovered`);
       if(!this.attackStep){this.attackStep=2;actor.action(action);return;}
       actor.animation.tick();

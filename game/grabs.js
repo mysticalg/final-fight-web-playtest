@@ -1,4 +1,4 @@
-import {escapePressed,queueEscape} from './player-specials.js?v=f02d1b8759';
+import {escapePressed,queueEscape} from './player-specials.js?v=47e20c535b';
 // Shared grab helpers: 004180, 00D87A, 003F40, 00D972 and 00D99E.
 const word=value=>value<<16>>16;
 const offsetWord=(position,offset)=>((word((position>>16)+offset)<<16)|(position&65535))|0;
@@ -32,6 +32,7 @@ export class GrabPair {
   constructor(data,rules,holder,victim,random,{comboThrow=false}={}) {
     this.data=data;this.rules=rules;this.holder=holder;this.victim=victim;this.random=random;
     this.character=rules.characters[holder.characterIndex];
+    this.enemyPoses=this.character.enemyVariants?.[victim.variant]??this.character.enemyPoses;
     this.victimMode=victim.mode;this.victimQueued=true;
     this.holding=true;this.held=true;holder.mode='grabInit';victim.mode='heldPending';
     this.queued=true;holder.attachment=0;this.timer=0;
@@ -169,7 +170,7 @@ export class GrabPair {
     }
     const status=attachHeld(this.holder,v,this.character.attachments);
     if(status===0) {
-      v.mode='held';v.animation.set(this.character.enemyPoses[v.attachment&127]);v.imageOffset=0;
+      v.mode='held';v.animation.set(this.enemyPoses[v.attachment&127]);v.imageOffset=0;
       if(!this.holding){this.held=false;v.mode=(v.y>>16)>(v.groundY>>16)?'releasedFallPending':'releasedPending';}
     } else if(status===255){this.held=false;v.mode='thrownPending';v.direction=v.facing;}
     else {this.held=false;v.mode=(v.y>>16)>(v.groundY>>16)?'releasedFallPending':'releasedPending';}
@@ -184,7 +185,7 @@ export class GrabPair {
     const v=this.victim;
     if(v.mode==='thrownPending') {
       v.mode='thrown';v.vy=0x400;v.vx=0x400*(v.direction?-1:1);
-      v.animation.set(this.rules.enemyThrown);v.imageOffset=0;return true;
+      v.animation.set(v.character.actions.thrown??this.rules.enemyThrown);v.imageOffset=0;return true;
     }
     if(v.mode==='thrown') {
       if(v.hitStop){v.hitStop--;return true;}
