@@ -1,4 +1,4 @@
-import {Animation} from './animation.js?v=8e52b06854';
+import {Animation} from './animation.js?v=5840963097';
 const word = value => value << 16 >> 16;
 
 // Actor with an optional recovered Bred controller. Leaving brain unset selects

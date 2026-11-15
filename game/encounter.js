@@ -1,9 +1,9 @@
-import {Player} from './player.js?v=8e52b06854';
-import {Enemy} from './enemy.js?v=8e52b06854';
-import {BredBrain} from './bred-brain.js?v=8e52b06854';
-import {GameRandom} from './enemy-ai.js?v=8e52b06854';
-import {contact,incomingContact,canGrab,canComboThrow} from './combat.js?v=8e52b06854';
-import {GrabPair} from './grabs.js?v=8e52b06854';
+import {Player} from './player.js?v=5840963097';
+import {Enemy} from './enemy.js?v=5840963097';
+import {BredBrain} from './bred-brain.js?v=5840963097';
+import {GameRandom} from './enemy-ai.js?v=5840963097';
+import {contact,incomingContact,canGrab,canComboThrow} from './combat.js?v=5840963097';
+import {GrabPair} from './grabs.js?v=5840963097';
 
 // Bounded single-enemy encounter. Stage entry, collision maps and spawn waves
 // remain separate recovery work; the stationary combat test is still available.
