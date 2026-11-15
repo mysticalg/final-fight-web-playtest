@@ -79,15 +79,19 @@ export class Player {
       this.integrateJump();
       if ((this.y >> 16) <= (this.groundY >> 16)) {
         this.y = this.groundY;
-        this.mode = 'landing'; this.action('landing');
+        this.mode = 'landingPending';
       } else this.animation.tick();
       return;
     }
+    if (this.mode === 'landingPending') {
+      this.mode = 'landing'; this.action('landing'); return;
+    }
     if (this.mode === 'landing') {
-      // 00AA7C–00AACC: a fresh input shortens the landing animation.
-      if ((pressed & 0x30) || ((input & 15) && !(previous & 15))) this.animation.remaining = 1;
+      // State 12 maps through 00A762 to 00B352, not the recovery at 00AA5E.
+      // 00B370–00B394: horizontal movement or terminal flags end the pose.
       this.animation.tick();
-      if (this.animation.flags & 128) this.mode = 'idlePending';
+      if (input & 3) this.chooseDirection(input);
+      if (((input & 3) && this.direction !== 8) || (this.animation.flags & 128)) this.mode = 'idlePending';
       return;
     }
     this.chooseDirection(input);
