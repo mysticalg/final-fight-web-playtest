@@ -1,5 +1,6 @@
 import {Player} from './game/player.js';
 import {Presentation} from './game/presentation.js';
+import {readGamepad} from './game/gamepad.js';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -8,6 +9,8 @@ const character = document.querySelector('#character');
 const keys = new Set(), touch = new Set();
 const bindings = {ArrowRight:1, ArrowLeft:2, ArrowDown:4, ArrowUp:8, KeyZ:16, KeyX:32};
 let paused = false, player, data, presentation;
+let gamepadState = null, gamepadInput = 0;
+const controllerStatus = document.querySelector('#controller-status');
 
 function clearInput() { keys.clear(); touch.clear(); document.querySelectorAll('.held').forEach(button => button.classList.remove('held')); }
 window.addEventListener('blur', clearInput);
@@ -26,23 +29,35 @@ function reset() {
 }
 character.addEventListener('change', reset);
 document.querySelector('#reset').addEventListener('click', reset);
-document.querySelector('#pause').addEventListener('click', event => {
-  paused = !paused; clearInput(); event.target.textContent = paused ? 'Resume' : 'Pause'; canvas.focus();
-});
+function togglePause() {
+  paused = !paused; clearInput(); document.querySelector('#pause').textContent = paused ? 'Resume' : 'Pause'; canvas.focus();
+}
+document.querySelector('#pause').addEventListener('click', togglePause);
+function pollController() {
+  const available = navigator.getGamepads ? [...navigator.getGamepads()] : [];
+  const pad = available.find(item => item?.connected && item.mapping === 'standard') ?? available.find(item => item?.connected);
+  const sample = readGamepad(pad,gamepadState);
+  gamepadState = sample.state;
+  const focused = !document.hidden && document.hasFocus();
+  gamepadInput = focused ? sample.input : 0;
+  controllerStatus.textContent = sample.connected ? (sample.standard ? 'Controller connected · standard mapping' : 'Controller connected · nonstandard mapping; check buttons') : 'No controller detected · connect one and press a button';
+  if (!focused) { gamepadState = null; return; }
+  for (const action of sample.actions) {
+    if (action === 'pause') togglePause();
+    if (action === 'reset') reset();
+    if (action === 'nextCharacter' || action === 'previousCharacter') {
+      const direction = action === 'nextCharacter' ? 1 : -1;
+      character.selectedIndex = (character.selectedIndex + direction + data.characters.length) % data.characters.length;
+      reset();
+    }
+  }
+}
+window.addEventListener('gamepaddisconnected', () => { gamepadInput = 0; gamepadState = null; });
 function input() {
   let value = 0;
   for (const key of keys) value |= bindings[key];
   for (const button of touch) value |= Number(button.dataset.input);
-  const pad = [...navigator.getGamepads()].find(item => item?.connected);
-  if (pad) {
-    if (pad.axes[0] > .4 || pad.buttons[15]?.pressed) value |= 1;
-    if (pad.axes[0] < -.4 || pad.buttons[14]?.pressed) value |= 2;
-    if (pad.axes[1] > .4 || pad.buttons[13]?.pressed) value |= 4;
-    if (pad.axes[1] < -.4 || pad.buttons[12]?.pressed) value |= 8;
-    if (pad.buttons[0]?.pressed) value |= 16;
-    if (pad.buttons[1]?.pressed) value |= 32;
-  }
-  return value;
+  return value | gamepadInput;
 }
 function step() {
   if (paused) return;
@@ -69,6 +84,7 @@ try {
   // CPS-1 cadence is approximately 59.64 Hz, not display refresh dependent.
   const frameTime = 1000 / (8000000 / (512 * 262));
   function animate(now) {
+    pollController();
     accumulator += Math.min(now - previous, 100); previous = now;
     while (accumulator >= frameTime) { step(); accumulator -= frameTime; }
     draw(); requestAnimationFrame(animate);
