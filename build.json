@@ -1,9 +1,9 @@
 {
-  "version": "a063fff218",
+  "version": "699993942d",
   "files": {
     ".nojekyll": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "app.js": "0e8e68a9fb72b01db9fcd886a0366ea9166166c589c94e632903c4eb1de631d5",
-    "assets/game.json": "8caf211cd629bc0c87b4f63141d418f48df03695ce36ed4577d61eaaf5d3fdc7",
+    "app.js": "9d49f69c981a9b827e4eee1c1242d5a42453459e650831a075225a3690f1431e",
+    "assets/game.json": "ade4f3b25c672e5fc70980a5b32c974d4b8c91733446c21e86953b58aad5b14c",
     "assets/slum-opening.png": "d5a5b3e959c13c6732d70feaf1c54f45192bc7868bfec56534caa9e87dc05396",
     "assets/sprites/frame-0-0.png": "324f7bf8373f15c81577edd5fc05f51b01fe8cb5d88078bedfa2c834b3ab4369",
     "assets/sprites/frame-0-1.png": "7a1b227f2c43eb9beb71091f22d2e7878508b6e4b8bed8bf53770701dcbbaa53",
@@ -131,9 +131,9 @@
     "assets/sprites/frame-9-1.png": "a31522428d059d1106c34c9f8c7eeb381f04caecabc7e23fede51e7fd87e5599",
     "game/animation.js": "dac0d82c058e915fecd0f51bb1de0b4018a3083a4dfcfa35233825ebeba94609",
     "game/gamepad.js": "cf29abefeda69a5b1d50d6937bbf885cc8497785837f753ea61b31faafdf802b",
-    "game/player.js": "6a4c270be9f1106ff4c859a58670e6b79c0ec32a13b8dc2c25cb3583ae547beb",
+    "game/player.js": "e966887bd50085bb344cfed0c8f93619eace9d68be0f2990c57682dff7e1cb4c",
     "game/presentation.js": "a0093495e1cb34661398f3d01b3bdfce0f550fb88bd9c06438773fe16cfa415f",
-    "index.html": "ef737899b8499a3d03e377ea0d7fbe4a0e4628ba92d65ce35bbe3445ac43bd69",
+    "index.html": "1c84417129b069ac803d9ce41a052144fd3091029cb4467508a36e702662b477",
     "README.md": "2dcc071ec0bd06dc21b07cf5d0e011a57ee84a1f1e0d37c3ea75fbc9b13dcd90",
     "style.css": "b2310635dd00c49376f27c76368550478fe0a747ad69e291671e10e9c7d907dd"
   }

@@ -1,6 +1,6 @@
-import {Player} from './game/player.js?v=a063fff218';
-import {Presentation} from './game/presentation.js?v=a063fff218';
-import {readGamepad} from './game/gamepad.js?v=a063fff218';
+import {Player} from './game/player.js?v=699993942d';
+import {Presentation} from './game/presentation.js?v=699993942d';
+import {readGamepad} from './game/gamepad.js?v=699993942d';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -9,17 +9,18 @@ const character = document.querySelector('#character');
 const keys = new Set(), touch = new Set();
 const bindings = {ArrowRight:1, ArrowLeft:2, ArrowDown:4, ArrowUp:8, KeyZ:16, KeyX:32};
 let paused = false, player, data, presentation;
-let gamepadState = null, gamepadInput = 0;
+let gamepadState = null, gamepadInput = 0, pulseInput = 0;
 const controllerStatus = document.querySelector('#controller-status');
 
-function clearInput() { keys.clear(); touch.clear(); document.querySelectorAll('.held').forEach(button => button.classList.remove('held')); }
+function clearInput() { keys.clear(); touch.clear(); pulseInput = 0; document.querySelectorAll('.held').forEach(button => button.classList.remove('held')); }
 window.addEventListener('blur', clearInput);
 canvas.addEventListener('blur', clearInput);
 document.addEventListener('visibilitychange', () => { if (document.hidden) clearInput(); });
 canvas.addEventListener('keydown', event => { if (bindings[event.code]) { keys.add(event.code); event.preventDefault(); } });
 canvas.addEventListener('keyup', event => { keys.delete(event.code); if (bindings[event.code]) event.preventDefault(); });
 for (const button of document.querySelectorAll('[data-input]')) {
-  button.addEventListener('pointerdown', event => { button.setPointerCapture(event.pointerId); touch.add(button); button.classList.add('held'); canvas.focus(); });
+  button.addEventListener('pointerdown', event => { event.preventDefault(); button.setPointerCapture(event.pointerId); touch.add(button); button.classList.add('held'); canvas.focus(); });
+  button.addEventListener('click', event => { if (event.detail === 0) { canvas.focus(); pulseInput |= Number(button.dataset.input); } });
   for (const name of ['pointerup','pointercancel','lostpointercapture']) button.addEventListener(name, () => { touch.delete(button); button.classList.remove('held'); });
 }
 function reset() {
@@ -57,11 +58,12 @@ function input() {
   let value = 0;
   for (const key of keys) value |= bindings[key];
   for (const button of touch) value |= Number(button.dataset.input);
-  return value | gamepadInput;
+  return value | gamepadInput | pulseInput;
 }
 function step() {
   if (paused) return;
   player.update(input());
+  pulseInput = 0;
   // Research slice viewport. Source screen clamp: 008DD4–008E1A.
   player.x = Math.max((data.stage.cameraX + 24) * 65536, Math.min((data.stage.cameraX + 360) * 65536, player.x));
   // Temporary movement-test floor bounds; stage collision map is unrecovered.
@@ -75,7 +77,7 @@ function draw() {
   status.textContent = paused ? 'Paused' : `${player.character.name} · ${player.mode} · build ${data.version}`;
 }
 try {
-  const metadata = await fetch('./assets/game.json?v=a063fff218');
+  const metadata = await fetch('./assets/game.json?v=699993942d');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
   presentation = await Presentation.load(data);
