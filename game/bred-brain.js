@@ -1,4 +1,4 @@
-import {advanceApproach,reachedPosition,faceTarget} from './enemy-ai.js?v=1202856f76';
+import {advanceApproach,reachedPosition,faceTarget} from './enemy-ai.js?v=1dbaf40537';
 const word=value=>value<<16>>16;
 
 // Bred family zero, one-player/no-wall encounter controller. Source: 021FC4,
@@ -95,6 +95,7 @@ export class BredBrain {
       if(this.inCloseRange(target)){this.reserve(world);this.state='attack';this.phase=0;return;}
       if(reachedPosition(actor,target,world.slots)){this.decidePosition(world,target);return;}
       advanceApproach(actor,target,world.slots);
+      world.collision?.resolve(actor);
       if(periodic)faceTarget(actor,target);return;
     }
     if(this.state==='waitPosition') {
@@ -132,6 +133,7 @@ export class BredBrain {
           if(actor.animation.flags){this.attackStep=4;actor.groundY=actor.y;actor.direction=actor.facing;actor.vy=0x780;actor.vx=0x280*(actor.facing?-1:1);actor.drag=5*(actor.facing?-1:1);}
         } else if(this.attackStep===4){
           actor.vy=word(actor.vy-0x66);actor.vx=word(actor.vx-actor.drag);actor.x=(actor.x+actor.vx*256)|0;actor.y=(actor.y+actor.vy*256)|0;
+          if(world.collision?.resolve(actor)>0)actor.vx=actor.drag=0;
           if((actor.y>>16)<=(actor.groundY>>16)){actor.y=actor.groundY;this.attackStep=6;actor.action('leapLand');}
         } else if(actor.animation.flags&128){this.phase=0;actor.running=true;actor.action('run');}
         return;

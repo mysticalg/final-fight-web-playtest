@@ -1,4 +1,4 @@
-import {Animation} from './animation.js?v=1202856f76';
+import {Animation} from './animation.js?v=1dbaf40537';
 const word = value => value << 16 >> 16;
 
 // Actor with an optional recovered Bred controller. Leaving brain unset selects
@@ -30,7 +30,17 @@ export class Enemy {
   }
   updateState(world,target) {
     if(this.mode==='neutral'){if(this.brain)this.brain.update(world,target);return;}
-    if(this.mode==='defeated')return;
+    if(this.mode==='removed')return;
+    if(this.mode==='removePending'){
+      if(this.brain)this.brain.release(world);this.mode='removed';this.removed=true;this.visible=false;return;
+    }
+    if(this.mode==='defeated'||this.mode==='corpse'){
+      // 021F1A / 021F3C / 021F7E: one initialization update, sixty countdown
+      // updates, then the next dispatcher call frees the actor/reservation.
+      if(this.mode==='defeated'){this.mode='corpse';this.corpseTimer=60;this.action('down');}
+      else if(!--this.corpseTimer)this.mode='removePending';
+      this.visible=(((world?.frame??0)+(world?.actorPhase??0))&3)!==0;return;
+    }
     if(this.mode==='releasedFallPending'){
       this.speedX=this.speedY=0;this.vx=this.vy=0;this.mode='releasedFall';this.action('neutral');return;
     }
@@ -97,8 +107,17 @@ export class Enemy {
       this.vx=(this.health<0?0x400:0x200)*(this.direction?-1:1); this.mode='fall'; return;
     }
     if(this.mode==='fall'||this.mode==='bounce') {
+      if(this.collisionWait){this.collisionWait--;this.animation.tick();return;}
       this.integrate();
+      if(world?.collision?.resolve(this)>0){
+        this.vx=0;
+        if(this.mode==='fall'){
+          this.sound(13);this.collisionWait=this.health<0?10:5;
+          if(this.vy>=0)this.vy=0;
+        }else this.drag=0;
+      }
       if((this.y>>16)<=(this.groundY>>16)) {
+        this.sound(13);
         this.y=this.groundY;
         if(this.mode==='fall') {
           this.mode='bounce'; this.action('down'); this.vy=this.health<0?0x400:0x280;
@@ -113,7 +132,7 @@ export class Enemy {
       const next=word(this.vx-this.drag);
       this.vx=(this.vx>=0)===(next>=0)?next:0;
       this.x=(this.x+this.vx*256)|0;
-      if(!this.vx){
+      if(!this.vx||world?.collision?.resolve(this)>0){
         if(this.health<0)this.mode='defeated';
         else {this.mode='recoverInit';if(this.brain)this.brain.release(world);}
       } else if(this.health>=0)this.animation.tick();

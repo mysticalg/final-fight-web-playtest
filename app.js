@@ -1,8 +1,8 @@
-import {Encounter} from './game/encounter.js?v=1202856f76';
-import {MultiEncounter} from './game/multi-encounter.js?v=1202856f76';
-import {Presentation} from './game/presentation.js?v=1202856f76';
-import {readGamepad} from './game/gamepad.js?v=1202856f76';
-import {GameAudio} from './game/audio.js?v=1202856f76';
+import {Encounter} from './game/encounter.js?v=1dbaf40537';
+import {MultiEncounter} from './game/multi-encounter.js?v=1dbaf40537';
+import {Presentation} from './game/presentation.js?v=1dbaf40537';
+import {readGamepad} from './game/gamepad.js?v=1dbaf40537';
+import {GameAudio} from './game/audio.js?v=1dbaf40537';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -16,7 +16,7 @@ audioButton.addEventListener('click',()=>{if(audio?.enabled)audio.disable();else
 document.addEventListener('visibilitychange',()=>audio?.setHidden(document.hidden));
 let gamepadState = null, gamepadInput = 0, pulseInput = 0;
 const controllerStatus = document.querySelector('#controller-status');
-const stateLabels={leaping:'jumping',escapePending:'special',escape:'special',escapeLanding:'recovering',grabInit:'grabbing',grabHoldPending:'holding',grabHold:'holding',grabCarryPending:'carrying',grabCarry:'carrying',grabKneePending:'knee strike',grabKnee:'knee strike',grabThrowPending:'throwing',grabThrow:'throwing',grabThrowRelease:'throwing',grabJumpPending:'jumping',grabJumpStart:'jumping',grabJumpAir:'jumping',grabJumpLand:'landing',grabPileRelease:'piledriver',postPile:'recovering',postPileAir:'recovering',postThrow:'recovering',heldPending:'grabbed',held:'grabbed',thrownPending:'thrown',thrown:'thrown',thrownBounce:'falling',thrownSlide:'falling',slamInit:'falling',slamFlight:'falling',slamSlide:'falling',releasedPending:'recovering',releasedWait:'recovering',releasedFallPending:'falling',releasedFall:'falling',releasedFloorWait:'recovering',idle:'ready',walkPending:'walking',walk:'walking',stopping:'ready',idlePending:'ready',punchPending:'punching',punch:'punching',jumpPending:'jumping',jumpStart:'jumping',airborne:'jumping',landingPending:'landing',landing:'landing',hurtPending:'hit',hurt:'hit',knockdownInit:'knocked down',knockdown:'knocked down',hurtBounce:'knocked down',hurtSlide:'knocked down',recoverPending:'getting up',recoverInit:'getting up',recoverWait:'knocked down',recover:'getting up',dead:'defeated',seek:'looking',choosePosition:'repositioning',approach:'approaching',runInit:'closing in',run:'closing in',attack:'attacking',waitPosition:'waiting',fallInit:'falling',fall:'falling',bounce:'falling',slide:'falling',defeated:'defeated',stationary:'stationary'};
+const stateLabels={leaping:'jumping',escapePending:'special',escape:'special',escapeLanding:'recovering',grabInit:'grabbing',grabHoldPending:'holding',grabHold:'holding',grabCarryPending:'carrying',grabCarry:'carrying',grabKneePending:'knee strike',grabKnee:'knee strike',grabThrowPending:'throwing',grabThrow:'throwing',grabThrowRelease:'throwing',grabJumpPending:'jumping',grabJumpStart:'jumping',grabJumpAir:'jumping',grabJumpLand:'landing',grabPileRelease:'piledriver',postPile:'recovering',postPileAir:'recovering',postThrow:'recovering',heldPending:'grabbed',held:'grabbed',thrownPending:'thrown',thrown:'thrown',thrownBounce:'falling',thrownSlide:'falling',slamInit:'falling',slamFlight:'falling',slamSlide:'falling',releasedPending:'recovering',releasedWait:'recovering',releasedFallPending:'falling',releasedFall:'falling',releasedFloorWait:'recovering',idle:'ready',walkPending:'walking',walk:'walking',stopping:'ready',idlePending:'ready',punchPending:'punching',punch:'punching',jumpPending:'jumping',jumpStart:'jumping',airborne:'jumping',landingPending:'landing',landing:'landing',hurtPending:'hit',hurt:'hit',knockdownInit:'knocked down',knockdown:'knocked down',hurtBounce:'knocked down',hurtSlide:'knocked down',recoverPending:'getting up',recoverInit:'getting up',recoverWait:'knocked down',recover:'getting up',dead:'defeated',seek:'looking',choosePosition:'repositioning',approach:'approaching',runInit:'closing in',run:'closing in',attack:'attacking',waitPosition:'waiting',fallInit:'falling',fall:'falling',bounce:'falling',slide:'falling',defeated:'defeated',corpse:'defeated',removePending:'defeated',removed:'cleared',stationary:'stationary'};
 
 function clearInput() { keys.clear(); touch.clear(); pulseInput = 0; document.querySelectorAll('.held').forEach(button => button.classList.remove('held')); }
 window.addEventListener('blur', clearInput);
@@ -89,7 +89,7 @@ function draw() {
   document.querySelector('#combat-status').textContent = encounter.enemies?`${encounter.enemies.map(e=>`${e.character.name} ${Math.max(0,e.health)}/${e.character.health}`).join(' · ')} · ${encounter.hits} landed · ${encounter.receivedHits} received`:`${enemy.character.name} · ${stateLabels[enemyState]} · HP ${Math.max(0,enemy.health)}/${enemy.character.health} · ${encounter.hits} landed · ${encounter.receivedHits} received`;
 }
 try {
-  const metadata = await fetch('./assets/game.json?v=1202856f76');
+  const metadata = await fetch('./assets/game.json?v=1dbaf40537');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
   audio=new GameAudio(data.audio,{onState:state=>{
