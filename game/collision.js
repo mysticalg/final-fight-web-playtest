@@ -1,4 +1,4 @@
-import{obstacleResponse}from'./obstacle-collision.js?v=e8d37198c6';
+import{obstacleResponse}from'./obstacle-collision.js?v=a4b5092206';
 const word=value=>value<<16>>16;
 // Response precedence for the two sides of a grounded actor (007CFE).
 const widePriority=[0,1,1,0,1,0,0,0,0,0,1,1,1,1,0,0,0,0,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0];

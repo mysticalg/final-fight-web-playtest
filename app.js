@@ -1,7 +1,7 @@
-import {StreetWorld} from './game/street-world.js?v=e8d37198c6';
-import {Presentation} from './game/presentation.js?v=e8d37198c6';
-import {readGamepad} from './game/gamepad.js?v=e8d37198c6';
-import {GameAudio} from './game/audio.js?v=e8d37198c6';
+import {StreetWorld} from './game/street-world.js?v=a4b5092206';
+import {Presentation} from './game/presentation.js?v=a4b5092206';
+import {readGamepad} from './game/gamepad.js?v=a4b5092206';
+import {GameAudio} from './game/audio.js?v=a4b5092206';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -93,7 +93,7 @@ function draw() {
 
 }
 try {
-  const metadata = await fetch('./assets/game.json?v=e8d37198c6');
+  const metadata = await fetch('./assets/game.json?v=a4b5092206');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
   audio=new GameAudio(data.audio,{onState:state=>{

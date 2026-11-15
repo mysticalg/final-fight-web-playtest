@@ -1,7 +1,8 @@
-import{BredBrain}from'./bred-brain.js?v=e8d37198c6';
-import{advanceApproach,reachedPosition,faceTarget}from'./enemy-ai.js?v=e8d37198c6';
-import{AxlBrain}from'./axl-brain.js?v=e8d37198c6';
-export function createEnemyBrain(actor){return actor.character.family===2?new AxlBrain(actor):actor.character.family===1?new JBrain(actor):new BredBrain(actor);}
+import{BredBrain}from'./bred-brain.js?v=a4b5092206';
+import{advanceApproach,reachedPosition,faceTarget}from'./enemy-ai.js?v=a4b5092206';
+import{AxlBrain}from'./axl-brain.js?v=a4b5092206';
+import{KnifeBrain}from'./knife-brain.js?v=a4b5092206';
+export function createEnemyBrain(actor){return actor.character.family===5?new KnifeBrain(actor):actor.character.family===2?new AxlBrain(actor):actor.character.family===1?new JBrain(actor):new BredBrain(actor);}
 
 // J/Two.P single-target controller (02832C–028F2E). Their locomotion speed
 // follows animation flags; they can abandon an attack and retreat when the

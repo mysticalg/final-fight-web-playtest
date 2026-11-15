@@ -1,5 +1,5 @@
-import{BredBrain}from'./bred-brain.js?v=e8d37198c6';
-import{advanceApproach,reachedPosition,faceTarget}from'./enemy-ai.js?v=e8d37198c6';
+import{BredBrain}from'./bred-brain.js?v=a4b5092206';
+import{advanceApproach,reachedPosition,faceTarget}from'./enemy-ai.js?v=a4b5092206';
 
 // Family 2 shares positioning and attack scripts with the thugs. Its six
 // locomotion poses are retained for hurt animations, and it can block hits.
@@ -35,6 +35,3 @@ export class AxlBrain extends BredBrain{
     if(waiting){a.running=false;a.action('neutral');}
   }
 }
-
-
-

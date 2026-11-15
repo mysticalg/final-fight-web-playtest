@@ -1,4 +1,4 @@
-import {escapePressed,queueEscape} from './player-specials.js?v=e8d37198c6';
+import {escapePressed,queueEscape} from './player-specials.js?v=a4b5092206';
 // Shared grab helpers: 004180, 00D87A, 003F40, 00D972 and 00D99E.
 const word=value=>value<<16>>16;
 const offsetWord=(position,offset)=>((word((position>>16)+offset)<<16)|(position&65535))|0;
@@ -33,7 +33,7 @@ export class GrabPair {
     this.data=data;this.rules=rules;this.holder=holder;this.victim=victim;this.random=random;
     this.character=rules.characters[holder.characterIndex];
     this.attachmentRows=this.character.attachmentsByFamily?.[victim.character.family??0]??this.character.attachments;
-    this.enemyPoses=this.character.enemyVariants?.[victim.variant]??this.character.enemyPoses;
+    this.enemyPoses=victim.character.heldPoses??this.character.enemyVariants?.[victim.variant]??this.character.enemyPoses;
     this.victimMode=victim.mode;this.victimQueued=true;
     this.holding=true;this.held=true;holder.mode='grabInit';victim.mode='heldPending';
     this.queued=true;holder.attachment=0;this.timer=0;

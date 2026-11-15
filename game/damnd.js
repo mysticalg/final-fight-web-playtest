@@ -1,5 +1,5 @@
-import{Animation}from'./animation.js?v=e8d37198c6';
-import{throwHealth}from'./grabs.js?v=e8d37198c6';
+import{Animation}from'./animation.js?v=a4b5092206';
+import{throwHealth}from'./grabs.js?v=a4b5092206';
 const word=n=>n<<16>>16;
 function angle(dx,dy){
   dx=word(dx);dy=word(dy*2);const x=Math.abs(dx),y=Math.abs(dy);
@@ -311,6 +311,3 @@ export class Damnd{
     this.mode='attack';this.phase=0;this.step=0;this.action('walk');
   }
 }
-
-
-

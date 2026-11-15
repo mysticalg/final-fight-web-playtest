@@ -89,7 +89,3 @@ export function incomingContact(data,enemy,player,{queued=false}={}) {
   enemy.hitStop=6;
   return true;
 }
-
-
-
-

@@ -1,17 +1,19 @@
-import {Player} from './player.js?v=e8d37198c6';
-import {Enemy} from './enemy.js?v=e8d37198c6';
-import {createEnemyBrain} from './j-brain.js?v=e8d37198c6';
-import {GameRandom} from './enemy-ai.js?v=e8d37198c6';
-import {contact,incomingContact,canGrab,canComboThrow} from './combat.js?v=e8d37198c6';
-import {GrabPair} from './grabs.js?v=e8d37198c6';
-import{CollisionGrid}from'./collision.js?v=e8d37198c6';
+import {Player} from './player.js?v=a4b5092206';
+import {Enemy} from './enemy.js?v=a4b5092206';
+import {createEnemyBrain} from './j-brain.js?v=a4b5092206';
+import {GameRandom} from './enemy-ai.js?v=a4b5092206';
+import {contact,incomingContact,canGrab,canComboThrow} from './combat.js?v=a4b5092206';
+import {GrabPair} from './grabs.js?v=a4b5092206';
+import{CollisionGrid}from'./collision.js?v=a4b5092206';
+import{KnifeEnemy}from'./knife-enemy.js?v=a4b5092206';
 
 // Bounded single-enemy encounter. Stage entry, collision maps and spawn waves
 // remain separate recovery work; the stationary combat test is still available.
 export class Encounter {
   constructor(data,character=0,{stationary=false,bounds=true,enemyVariant=0,collision=false}={}) {
     this.data=data;this.player=new Player(data,character);
-    this.enemy=new Enemy(data,this.player.x+(stationary?64:104)*65536,this.player.y,stationary?1:0,enemyVariant);
+    this.enemy=data.enemies[enemyVariant].family===5?new KnifeEnemy(data,{x:this.player.x+(stationary?64:104)*65536,y:this.player.y,direction:stationary?1:0,variant:enemyVariant,level:0}):new Enemy(data,this.player.x+(stationary?64:104)*65536,this.player.y,stationary?1:0,enemyVariant);
+    if(this.enemy instanceof KnifeEnemy){this.enemy.mode='neutral';if(stationary)this.enemy.brain=null;}
     this.stationary=stationary;this.bounds=bounds;this.hits=0;this.receivedHits=0;
     this.sounds=[];this.player.onSound=this.enemy.onSound=command=>this.sounds.push(command);
     this.world={frame:0,random:new GameRandom(0),activeAttackers:0,difficulty:4,slots:data.enemyPositionSlots};

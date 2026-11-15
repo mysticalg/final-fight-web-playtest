@@ -65,4 +65,3 @@ export function updateReaction(player,input,pressed,previous=0) {
   }
   return false;
 }
-
