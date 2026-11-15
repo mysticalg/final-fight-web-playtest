@@ -1,5 +1,5 @@
-import{BredBrain}from'./bred-brain.js?v=50d82f0312';
-import{advanceApproach,reachedPosition,faceTarget}from'./enemy-ai.js?v=50d82f0312';
+import{BredBrain}from'./bred-brain.js?v=21ea355a4c';
+import{advanceApproach,reachedPosition,faceTarget}from'./enemy-ai.js?v=21ea355a4c';
 export function createEnemyBrain(actor){return actor.character.family===1?new JBrain(actor):new BredBrain(actor);}
 
 // J/Two.P single-target controller (02832C–028F2E). Their locomotion speed
@@ -20,7 +20,9 @@ export class JBrain extends BredBrain{
     if(!speed)throw new Error(`Unrecovered J movement phase ${actor.animation.flags}`);
     [actor.speedX,actor.speedY]=speed;
     advanceApproach(actor,target,world.slots,{accelerate:false});
-    if(world.collision?.resolve(actor)&&world.occupiedSlots?.[actor.positionSlot])this.walk();
+    const response=world.collision?.resolve(actor);
+    if(['approach','run'].includes(this.state)&&this.blockedByObject(world,response))return true;
+    if(response&&world.occupiedSlots?.[actor.positionSlot])this.walk();
   }
   run(){
     this.state='run';this.phase=0;
@@ -36,6 +38,7 @@ export class JBrain extends BredBrain{
   }
   retreat(world){this.evadeIntent=false;this.actor.running=false;this.state='retreat';this.phase=0;this.actor.action('retreat');this.release(world);}
   update(world,target){
+    if(this.state==='obstacle'){this.updateObstacle(world);return;}
     const actor=this.actor,periodic=((world.frame+(world.actorPhase??0))&7)===0;
     if(this.cooldown)this.cooldown--;
     if(this.state==='seek'){
@@ -52,7 +55,7 @@ export class JBrain extends BredBrain{
       if(this.targetInvalid(world,target)){this.walk();return;}
       if(this.inCloseRange(target)){this.reserve(world);this.state='attack';this.phase=0;return;}
       if(reachedPosition(actor,target,world.slots)){this.decidePosition(world,target);return;}
-      this.move(world,target);if(periodic)faceTarget(actor,target);return;
+      if(this.move(world,target))return;if(periodic)faceTarget(actor,target);return;
     }
     if(this.state==='waitPosition'){
       if(!this.phase){this.phase=2;this.wait=70;actor.action('neutral');}

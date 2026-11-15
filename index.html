@@ -3,21 +3,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Final Fight — native JavaScript</title>
-<link rel="stylesheet" href="style.css?v=50d82f0312">
+<link rel="stylesheet" href="style.css?v=21ea355a4c">
 <main>
-<header><h1>FINAL FIGHT</h1><p>Native JavaScript · Combat and containers</p></header>
-<div class="toolbar"><label>Character <select id="character"><option>Guy</option><option>Cody</option><option>Haggar</option></select></label><label>Enemy <select id="enemy"><option>Bred</option><option>Dug</option><option>Jake</option><option>Simons</option><option>J</option><option>Two.P</option></select></label><button id="reset">Reset position</button><button id="pause">Pause</button></div>
-<div class="toolbar"><label>Mode <select id="encounter-mode"><option value="crowd">Crowd encounter</option><option value="encounter">Enemy encounter</option><option value="stationary">Stationary target</option><option value="containers">Containers &amp; pickups</option></select></label><button id="audio" disabled>Enable audio</button></div>
-<canvas id="game" width="384" height="224" tabindex="0" aria-label="Native Final Fight encounter. Arrow keys move, Z punches, X jumps. Bred approaches and attacks."></canvas>
-<p id="status" role="status">Loading recovered game data…</p>
+<header><h1>FINAL FIGHT</h1><p>Native JavaScript</p></header>
+<div class="toolbar"><label>Character <select id="character"><option>Guy</option><option>Cody</option><option>Haggar</option></select></label><button id="reset">New game</button><button id="pause">Pause</button><button id="audio" disabled>Enable audio</button><button id="continue" hidden>Continue</button></div>
+<canvas id="game" width="384" height="224" tabindex="0" aria-label="Final Fight. Arrow keys move, Z punches, X jumps. Fight through the Slum and head right."></canvas>
+<p id="status" role="status">Loading game…</p>
 <p id="combat-status" role="status"></p>
-<p id="audio-status" role="status">Audio off · select Enable audio for original music and combat effects.</p>
+<p id="audio-status" role="status">Audio off.</p>
 <div class="touch" aria-label="Touch controls"><button data-input="2" aria-label="Move left">←</button><button data-input="8" aria-label="Move up">↑</button><button data-input="4" aria-label="Move down">↓</button><button data-input="1" aria-label="Move right">→</button><button data-input="16">Punch</button><button data-input="32">Jump</button><button data-input="48">Special</button></div>
-<p class="controls">Arrows: move · Z: punch / combo · X: jump · Z or Down+Z in the air: jump attacks · Z+X or C: escape special</p>
-<p id="controller-status" role="status">No controller detected · connect one and press a button</p>
-<p class="controls">Controller: stick/D-pad move · A/Cross punch · B/Circle jump · LB/RB character · Start pause · Back/Select reset</p>
-<p class="scope">Bred, Dug, Jake, Simons, J and Two.P use recovered health, defense and attack scripts. J and Two.P can retreat from fresh attacks; the thug family includes leaping attacks. Land hits and press Z again to continue a standing combo. Walk into the enemy to grab; Z knees, a horizontal direction+Z throws, and X releases into a jump. Haggar carries after lifting: X then Z performs a piledriver. Back+Z on a combo finisher throws. Press jump again as Guy reaches a wall to rebound; hold away from the wall for a longer jump. Z+X or C escapes for eight HP when it hits; whiffs are free. Enable audio plays the original Slum music and recovered combat cues. Reset restarts the encounter. Crowd encounter pits you against Bred, J and Two.P together; the single-enemy modes remain available. Containers & pickups mode adds a breakable drum and bin. Stand near a dropped item and punch to collect it; food restores health and treasure records a score event. This remains a fixed-screen test. Stage entry, other enemies and prop families, weapons, break fragments, pickup shadows, lives/respawn, progression and additional audio remain unfinished.</p>
+<p class="controls">Arrows: move · Z: punch / pick up · X: jump · Down+Z in the air: downward attack · Z+X or C: special</p>
+<p id="controller-status" role="status">Connect a controller and press a button.</p>
+<p class="controls">Controller: stick/D-pad move · A/Cross punch · B/Circle jump · Start pause · Back/Select new game</p>
+<p class="scope">The continuous game is under construction, beginning with the Slum street. Further areas, bosses, weapons and complete audio are still being added.</p>
 </main>
 <script>window.addEventListener('error',event=>console.error('Game startup/runtime error:',event.message||'module resource failed',event.filename||''));</script>
-<script type="module" src="app.js?v=50d82f0312" onerror="document.querySelector('#status').textContent='Game code could not load. Reload the page to retry.'"></script>
+<script type="module" src="app.js?v=21ea355a4c" onerror="document.querySelector('#status').textContent='Game code could not load. Reload the page to retry.'"></script>
 </html>

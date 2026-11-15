@@ -1,5 +1,5 @@
-# Final Fight native browser playtest
+# Final Fight native JavaScript game
 
-Public runtime build only. Recovered Bred, Dug, Jake and Simons controllers use original health, defense, colors and weighted attack scripts, including leaping attacks. Guy, Cody and Haggar can move, jump, chain standing punches, use ordinary/downward air attacks, grab, knee, throw, take damage, fall and recover; Haggar can carry and piledrive. All three characters have backward combo throws and hit-dependent-cost escape specials. Stationary target mode is preserved. A three-enemy crowd encounter is the default, with original deferred contact ordering and special knockback on both sides. Single-enemy and stationary modes remain available. Enemies use the recovered opening static floor grid and defeated bodies flash then clear. Containers & pickups mode includes original drum/bin breaks, food/treasure collection and pickup poses. Fixed screen: stage entry/progression, other enemy families/bosses, remaining moves, lives/respawn and additional audio are unfinished. Original Slum music and recovered punch, air-attack, escape and contact cues use native Web Audio playback. Select Enable audio.
+One scrolling game flow, starting with the Slum street. Choose Guy, Cody or Haggar, fight enemies, break containers and collect items. Three lives and Continue are connected. Further areas, bosses, weapons and full audio remain unfinished.
 
-No emulator or ROM archive is included. Graphics and audio are converted runtime assets from the supplied Final Fight set; game content belongs to Capcom.
+No emulator, CPU interpreter, WebAssembly emulator or ROM archive is included. Original graphics/audio are converted runtime media; the game content belongs to Capcom.

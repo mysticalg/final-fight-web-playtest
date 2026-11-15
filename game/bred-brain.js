@@ -1,4 +1,4 @@
-import {advanceApproach,reachedPosition,faceTarget} from './enemy-ai.js?v=50d82f0312';
+import {advanceApproach,reachedPosition,faceTarget} from './enemy-ai.js?v=21ea355a4c';
 const word=value=>value<<16>>16;
 
 // Bred family zero, one-player/no-wall encounter controller. Source: 021FC4,
@@ -28,6 +28,32 @@ export class BredBrain {
     const actor=this.actor;
     this.state='run';this.phase=0;
     if(!actor.running){actor.desiredSpeedX=0x19900;actor.desiredSpeedY=0xcc00;actor.running=true;actor.action('run');}
+  }
+  blockedByObject(world,response){
+    const actor=this.actor;
+    if(response!==3||!actor.collisionObject||actor.facing!==actor.direction)return false;
+    actor.blockedTimer=((actor.blockedTimer??0)-1)&255;
+    if(actor.blockedTimer)return false;
+    const table=actor.character.entry?.blockedWait??this.rules.blockedWait;
+    actor.blockedTimer=table[world.random.next()&15];this.state='obstacle';this.phase=0;return true;
+  }
+  updateObstacle(world){
+    const actor=this.actor,object=actor.collisionObject;
+    if(actor.hitStop){actor.hitStop--;return;}
+    if(!this.phase){
+      if(object)actor.facing=(actor.x>>16)<(object.x>>16)?0:1;
+      this.phase=2;actor.action(actor.character.family===1?'jab':'strike');return;
+    }
+    actor.animation.tick();
+    if(this.phase===2){
+      if(!actor.data.images[actor.animation.image].attackIndex)return;
+      this.phase=4;
+      if(object&&!object.removed&&object.health>=0){object.health=-1;object.owner=-1;object.hitFrom=actor.facing;object.hitStop=actor.hitStop=6;}
+    }else if(actor.animation.flags&128){
+      this.state='seek';this.phase=0;actor.action('neutral');
+      actor.running=false;
+      if(actor.character.family!==1){actor.desiredSpeedX=0x20000;actor.desiredSpeedY=0x10000;}
+    }
   }
   choosePosition(world,target) {
     const actor=this.actor,occupied=world.occupiedSlots??Array(8).fill(0);
@@ -74,6 +100,7 @@ export class BredBrain {
     this.phase=this.script[this.scriptIndex++];this.attackStep=0;
   }
   update(world,target) {
+    if(this.state==='obstacle'){this.updateObstacle(world);return;}
     const actor=this.actor;
     if(this.cooldown)this.cooldown--;
     const periodic=((world.frame+(world.actorPhase??0))&7)===0;
@@ -95,7 +122,7 @@ export class BredBrain {
       if(this.inCloseRange(target)){this.reserve(world);this.state='attack';this.phase=0;return;}
       if(reachedPosition(actor,target,world.slots)){this.decidePosition(world,target);return;}
       advanceApproach(actor,target,world.slots);
-      world.collision?.resolve(actor);
+      if(this.blockedByObject(world,world.collision?.resolve(actor)))return;
       if(periodic)faceTarget(actor,target);return;
     }
     if(this.state==='waitPosition') {

@@ -1,7 +1,7 @@
-import {Animation} from './animation.js?v=50d82f0312';
-import {receiveHit,updateReaction} from './player-reaction.js?v=50d82f0312';
-import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=50d82f0312';
-import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=50d82f0312';
+import {Animation} from './animation.js?v=21ea355a4c';
+import {receiveHit,updateReaction} from './player-reaction.js?v=21ea355a4c';
+import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=21ea355a4c';
+import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=21ea355a4c';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
 // Movement, jump/landing and standing attacks. Contact, grabs and damage
@@ -88,6 +88,11 @@ export class Player {
     this.previousInput = input;
     if(updateSpecial(this))return;
     if(updateReaction(this,input,pressed,previous))return;
+    if(this.mode==='respawnFall'){
+      this.integrateJump();this.collision?.resolveAir(this,16);
+      if((this.y>>16)<=(this.groundY>>16)){this.y=this.groundY;this.mode='landingPending';}
+      this.animation.tick();return;
+    }
     if(this.mode==='pickup'){
       this.animation.tick();if(this.animation.flags&128){this.mode='idlePending';this.invulnerable=Math.max(this.invulnerable,10);}return;
     }
