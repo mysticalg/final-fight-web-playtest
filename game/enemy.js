@@ -1,5 +1,5 @@
-import {Animation} from './animation.js?v=1df997c713';
-import{faceTarget}from'./enemy-ai.js?v=1df997c713';
+import {Animation} from './animation.js?v=50d82f0312';
+import{faceTarget}from'./enemy-ai.js?v=50d82f0312';
 const word = value => value << 16 >> 16;
 
 // Actor with an optional recovered Bred controller. Leaving brain unset selects

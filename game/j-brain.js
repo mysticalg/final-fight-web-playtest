@@ -1,5 +1,5 @@
-import{BredBrain}from'./bred-brain.js?v=1df997c713';
-import{advanceApproach,reachedPosition,faceTarget}from'./enemy-ai.js?v=1df997c713';
+import{BredBrain}from'./bred-brain.js?v=50d82f0312';
+import{advanceApproach,reachedPosition,faceTarget}from'./enemy-ai.js?v=50d82f0312';
 export function createEnemyBrain(actor){return actor.character.family===1?new JBrain(actor):new BredBrain(actor);}
 
 // J/Two.P single-target controller (02832C–028F2E). Their locomotion speed

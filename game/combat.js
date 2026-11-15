@@ -35,13 +35,18 @@ export function contact(data,player,enemy,{queued=false}={}) {
   const dx=((enemy.x>>16)-(player.x>>16)+128)&65535;
   const depth=word((enemy.groundY>>16)-(player.groundY>>16));
   const special=player.mode.startsWith('escape');
-  if(dx>256||depth < (special?-24:-12)||depth > (special?24:9))return false;
+  if(enemy.isProp){
+    if(player.floorOffset)return false;
+    if(enemy.subtype!==1||enemy.appearance<2){const range=enemy.subtype===1?8:10;if(depth<(special?-range:0)||depth>range*(special?2:1))return false;}
+  }else if(dx>256||depth < (special?-24:-12)||depth > (special?24:9))return false;
   const attack=resolveBoxes(player,image).attack;
   const hurt=resolveBoxes(enemy,data.images[enemy.animation.image]).hurt;
   if(!boxesOverlap(attack,hurt))return false;
   // 007330: latch, damage, orientation and six-frame attacker/victim hit-stop.
-  const hitFrom=special?(((player.x>>16)&65535)>((enemy.x>>16)&65535)?1:0):player.facing;
+  let hitFrom=special?(((player.x>>16)&65535)>((enemy.x>>16)&65535)?1:0):player.facing;
+  if(enemy.isProp&&!special&&player.characterIndex===2&&image.attackIndex===14)hitFrom^=1;
   enemy.hit(attackDamage(player.combat,attack,enemy.defenseIndex),attack.reaction,hitFrom);
+  if(enemy.isProp){enemy.owner=player.playerIndex??0;player.sound?.(24);player.hitStop=6;if(enemy.subtype!==1||enemy.appearance<2){player.comboWindow=45;player.escapeHit=true;}return true;}
   player.sound?.(attack.sound);
   player.hitStop=6;
   player.comboWindow=45;
@@ -49,6 +54,7 @@ export function contact(data,player,enemy,{queued=false}={}) {
   return true;
 }
 export function canGrab(data,player,enemy) {
+  if(enemy.grabbable===false)return false;
   const image=data.images[player.animation.image];
   if(!(image.attackIndex&128)||player.grabSuppressed||player.mode==='dead'||enemy.health<0||enemy.pendingReaction)return false;
   if((player.y>>16)!==(player.groundY>>16)||(enemy.y>>16)!==(enemy.groundY>>16))return false;
@@ -58,6 +64,7 @@ export function canGrab(data,player,enemy) {
   return boxesOverlap(resolveBoxes(player,image).attack,resolveBoxes(enemy,data.images[enemy.animation.image]).hurt);
 }
 export function canComboThrow(data,player,enemy) {
+  if(enemy.grabbable===false)return false;
   if(enemy.health<0||(enemy.y>>16)!==(enemy.groundY>>16)||['heldPending','held','thrownPending','thrown','thrownBounce','thrownSlide'].includes(enemy.mode))return false;
   if(!resolveBoxes(enemy,data.images[enemy.animation.image]).hurt)return false;
   const depth=word((enemy.groundY>>16)-(player.groundY>>16));

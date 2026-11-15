@@ -1,8 +1,9 @@
-import {Encounter} from './game/encounter.js?v=1df997c713';
-import {MultiEncounter} from './game/multi-encounter.js?v=1df997c713';
-import {Presentation} from './game/presentation.js?v=1df997c713';
-import {readGamepad} from './game/gamepad.js?v=1df997c713';
-import {GameAudio} from './game/audio.js?v=1df997c713';
+import {Encounter} from './game/encounter.js?v=50d82f0312';
+import {MultiEncounter} from './game/multi-encounter.js?v=50d82f0312';
+import {ContainerEncounter} from './game/container-encounter.js?v=50d82f0312';
+import {Presentation} from './game/presentation.js?v=50d82f0312';
+import {readGamepad} from './game/gamepad.js?v=50d82f0312';
+import {GameAudio} from './game/audio.js?v=50d82f0312';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -36,11 +37,11 @@ for (const button of document.querySelectorAll('[data-input]')) {
 function reset() {
   if (!data) return;
   const mode=document.querySelector('#encounter-mode').value;
-  document.querySelector('#enemy').disabled=mode==='crowd';
-  encounter = mode==='crowd'?new MultiEncounter(data,character.selectedIndex):new Encounter(data,character.selectedIndex,{collision:true,stationary:mode==='stationary',enemyVariant:document.querySelector('#enemy').selectedIndex});
+  document.querySelector('#enemy').disabled=['crowd','containers'].includes(mode);
+  encounter = mode==='containers'?new ContainerEncounter(data,character.selectedIndex):mode==='crowd'?new MultiEncounter(data,character.selectedIndex):new Encounter(data,character.selectedIndex,{collision:true,stationary:mode==='stationary',enemyVariant:document.querySelector('#enemy').selectedIndex});
   player=encounter.player;enemy=encounter.enemy;
   audio?.restart();
-  canvas.setAttribute('aria-label',`Native Final Fight encounter. Arrow keys move, Z punches, X jumps. ${encounter.enemies?encounter.enemies.map(e=>e.character.name).join(', ')+' approach and attack':`${enemy.character.name} ${encounter.stationary?'is a stationary target':'approaches and attacks'}`}.`);
+  canvas.setAttribute('aria-label',`Native Final Fight encounter. Arrow keys move, Z punches, X jumps. ${encounter.props?'Break containers, then stand near a dropped item and punch to collect it':encounter.enemies?encounter.enemies.map(e=>e.character.name).join(', ')+' approach and attack':`${enemy.character.name} ${encounter.stationary?'is a stationary target':'approaches and attacks'}`}.`);
   clearInput(); canvas.focus();
   if(presentation)draw();
 }
@@ -87,13 +88,14 @@ function step() {
   pulseInput = 0;
 }
 function draw() {
-  presentation.draw(context,player,encounter.enemies??enemy);
+  presentation.draw(context,player,encounter.actors??encounter.enemies??enemy);
   status.textContent = `${player.character.name} · HP ${Math.max(0,player.health)}/${player.character.health} · ${paused?'paused':stateLabels[player.mode]} · build ${data.version}`;
+  if(encounter.props){document.querySelector('#combat-status').textContent=`Containers ${encounter.props.filter(p=>p.solid).length}/${encounter.props.length} · ${encounter.collected} items collected · ${encounter.hits} landed`;return;}
   const enemyState=enemy.mode==='neutral'?(enemy.brain?.phase===18&&enemy.brain?.attackStep===4?'leaping':enemy.brain?.state??'stationary'):enemy.mode;
   document.querySelector('#combat-status').textContent = encounter.enemies?`${encounter.enemies.map(e=>`${e.character.name} ${Math.max(0,e.health)}/${e.character.health}`).join(' · ')} · ${encounter.hits} landed · ${encounter.receivedHits} received`:`${enemy.character.name} · ${stateLabels[enemyState]} · HP ${Math.max(0,enemy.health)}/${enemy.character.health} · ${encounter.hits} landed · ${encounter.receivedHits} received`;
 }
 try {
-  const metadata = await fetch('./assets/game.json?v=1df997c713');
+  const metadata = await fetch('./assets/game.json?v=50d82f0312');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
   audio=new GameAudio(data.audio,{onState:state=>{

@@ -1,4 +1,4 @@
-import{obstacleResponse}from'./obstacle-collision.js?v=1df997c713';
+import{obstacleResponse}from'./obstacle-collision.js?v=50d82f0312';
 const word=value=>value<<16>>16;
 // Response precedence for the two sides of a grounded actor (007CFE).
 const widePriority=[0,1,1,0,1,0,0,0,0,0,1,1,1,1,0,0,0,0,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0];
@@ -109,7 +109,8 @@ export class CollisionGrid{
     if(actor.collisionType<0){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}
     return actor.collisionType;
   }
-  resolveAir(actor,width=16,height=64){
+  resolveCenterAir(actor,height=64){return this.resolveAir(actor,0,height,{center:true});}
+  resolveAir(actor,width=16,height=64,{center=false}={}){
     const offset=actor.vx<0?-width:width,raised=!!actor.floorOffset;
     const probe=(x,y)=>{
       const elevated=!!actor.floorOffset;
@@ -130,6 +131,7 @@ export class CollisionGrid{
       return raisedTileResponse(this.lookup(x,y),x,y);
     };
     const first=this.resolveWith(actor,offset,probe,secondProbe);
+    if(center){if(first<0){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}return actor.collisionType;}
     if(raised&&first<=0){const second=this.resolveWith(actor,-offset,probe,secondProbe);if((first&second)<0){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}}
     else if(!raised&&first<0){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}
     return actor.collisionType;

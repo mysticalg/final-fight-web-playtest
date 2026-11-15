@@ -31,8 +31,8 @@ export class Presentation {
     for(const actor of actors)this.actor(context,actor);
   }
   actor(context,player) {
-    if(player.removed||player.visible===false)return;
-    const key = `${player.animation.image}-${player.facing}`;
+    if(player.removed||player.visible===false||player.drawn===false)return;
+    const key = `${player.animation.image}-${player.facing}${player.paletteOverride?'-p'+player.paletteOverride:''}`;
     const sprite = this.data.sprites[key];
     if (!sprite) throw new Error(`Animation graphic is unavailable: ${key}`);
     const image=this.data.images[player.animation.image];

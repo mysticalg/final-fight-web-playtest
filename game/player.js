@@ -1,7 +1,7 @@
-import {Animation} from './animation.js?v=1df997c713';
-import {receiveHit,updateReaction} from './player-reaction.js?v=1df997c713';
-import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=1df997c713';
-import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=1df997c713';
+import {Animation} from './animation.js?v=50d82f0312';
+import {receiveHit,updateReaction} from './player-reaction.js?v=50d82f0312';
+import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=50d82f0312';
+import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=50d82f0312';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
 // Movement, jump/landing and standing attacks. Contact, grabs and damage
@@ -88,6 +88,9 @@ export class Player {
     this.previousInput = input;
     if(updateSpecial(this))return;
     if(updateReaction(this,input,pressed,previous))return;
+    if(this.mode==='pickup'){
+      this.animation.tick();if(this.animation.flags&128){this.mode='idlePending';this.invulnerable=Math.max(this.invulnerable,10);}return;
+    }
     if(this.mode==='postPile') {
       this.invulnerable=Math.max(this.invulnerable,34);this.grabCooldown=this.data.grabs.haggarCooldown[this.worldRandom.next()&31];
       this.mode='postPileAir';this.groundY=this.y;this.vy=0x300;this.vx=this.facing?0x300:-0x300;this.drag=this.facing?5:-5;this.action('postPile');return;
