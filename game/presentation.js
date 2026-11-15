@@ -27,7 +27,7 @@ export class Presentation {
   draw(context,player,enemy) {
     context.imageSmoothingEnabled = false;
     context.drawImage(this.background,0,0);
-    const actors=enemy?[player,enemy].sort((a,b)=>b.groundY-a.groundY):[player];
+    const actors=[player,...(Array.isArray(enemy)?enemy:enemy?[enemy]:[])].sort((a,b)=>b.groundY-a.groundY);
     for(const actor of actors)this.actor(context,actor);
   }
   actor(context,player) {

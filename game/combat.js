@@ -25,12 +25,12 @@ export function attackDamage(combat,attack,defenseIndex=0) {
   if(base===undefined)throw new Error('Unrecovered damage selector');
   return defenseIndex ? combat.defense[base]?.[defenseIndex] : base;
 }
-export function contact(data,player,enemy) {
+export function contact(data,player,enemy,{queued=false}={}) {
   const image=data.images[player.animation.image];
-  if(!image.attackIndex)enemy.hitLatch=false;
+  if(!queued&&!image.attackIndex)enemy.hitLatch=false;
   if(image.attackIndex&128)return false;
-  if(!['punch','airborne','escapePending','escape','escapeLanding'].includes(player.mode))return false;
-  if(enemy.hitLatch||enemy.health<0)return false;
+  if(!queued&&!['punch','airborne','escapePending','escape','escapeLanding'].includes(player.mode))return false;
+  if((!queued&&enemy.hitLatch)||enemy.health<0)return false;
   // 0033EE / 008D32: ordinary player attack queue, including asymmetric depth.
   const dx=((enemy.x>>16)-(player.x>>16)+128)&65535;
   const depth=word((enemy.groundY>>16)-(player.groundY>>16));
@@ -40,7 +40,8 @@ export function contact(data,player,enemy) {
   const hurt=resolveBoxes(enemy,data.images[enemy.animation.image]).hurt;
   if(!boxesOverlap(attack,hurt))return false;
   // 007330: latch, damage, orientation and six-frame attacker/victim hit-stop.
-  enemy.hit(attackDamage(player.combat,attack,enemy.defenseIndex),attack.reaction,player.facing);
+  const hitFrom=special?(((player.x>>16)&65535)>((enemy.x>>16)&65535)?1:0):player.facing;
+  enemy.hit(attackDamage(player.combat,attack,enemy.defenseIndex),attack.reaction,hitFrom);
   player.sound?.(attack.sound);
   player.hitStop=6;
   player.comboWindow=45;
@@ -64,10 +65,10 @@ export function canComboThrow(data,player,enemy) {
   const dx=((player.x>>16)-(enemy.x>>16))&65535;
   return player.facing?dx<128:dx>0xff80;
 }
-export function incomingContact(data,enemy,player) {
+export function incomingContact(data,enemy,player,{queued=false}={}) {
   const image=data.images[enemy.animation.image];
-  if(!image.attackIndex)player.hitLatch=false;
-  if(player.hitLatch||player.mode==='dead')return false;
+  if(!queued&&!image.attackIndex)player.hitLatch=false;
+  if((!queued&&player.hitLatch)||player.mode==='dead')return false;
   const dx=((enemy.x>>16)-(player.x>>16)+128)&65535;
   const depth=word((enemy.groundY>>16)-(player.groundY>>16));
   if(dx>256||depth < -12||depth > 9)return false;
@@ -76,6 +77,7 @@ export function incomingContact(data,enemy,player) {
   if(!boxesOverlap(attack,hurt))return false;
   // 007526 / 007592 uses 0079C6 (base damage, without defense adjustment).
   player.hit(attackDamage(enemy.combat,attack),attack.reaction,enemy.facing);
+  player.hitAttacker=enemy;
   enemy.sound?.(attack.sound);
   enemy.hitStop=6;
   return true;

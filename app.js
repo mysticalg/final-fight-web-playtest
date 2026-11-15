@@ -1,7 +1,8 @@
-import {Encounter} from './game/encounter.js?v=946ac5f4a3';
-import {Presentation} from './game/presentation.js?v=946ac5f4a3';
-import {readGamepad} from './game/gamepad.js?v=946ac5f4a3';
-import {GameAudio} from './game/audio.js?v=946ac5f4a3';
+import {Encounter} from './game/encounter.js?v=1202856f76';
+import {MultiEncounter} from './game/multi-encounter.js?v=1202856f76';
+import {Presentation} from './game/presentation.js?v=1202856f76';
+import {readGamepad} from './game/gamepad.js?v=1202856f76';
+import {GameAudio} from './game/audio.js?v=1202856f76';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -30,10 +31,12 @@ for (const button of document.querySelectorAll('[data-input]')) {
 }
 function reset() {
   if (!data) return;
-  encounter = new Encounter(data,character.selectedIndex,{stationary:document.querySelector('#encounter-mode').value==='stationary',enemyVariant:document.querySelector('#enemy').selectedIndex});
+  const mode=document.querySelector('#encounter-mode').value;
+  document.querySelector('#enemy').disabled=mode==='crowd';
+  encounter = mode==='crowd'?new MultiEncounter(data,character.selectedIndex):new Encounter(data,character.selectedIndex,{stationary:mode==='stationary',enemyVariant:document.querySelector('#enemy').selectedIndex});
   player=encounter.player;enemy=encounter.enemy;
   audio?.restart();
-  canvas.setAttribute('aria-label',`Native Final Fight encounter. Arrow keys move, Z punches, X jumps. ${enemy.character.name} ${encounter.stationary?'is a stationary target':'approaches and attacks'}.`);
+  canvas.setAttribute('aria-label',`Native Final Fight encounter. Arrow keys move, Z punches, X jumps. ${encounter.enemies?'Bred, Dug and Jake approach and attack':`${enemy.character.name} ${encounter.stationary?'is a stationary target':'approaches and attacks'}`}.`);
   clearInput(); canvas.focus();
   if(presentation)draw();
 }
@@ -80,13 +83,13 @@ function step() {
   pulseInput = 0;
 }
 function draw() {
-  presentation.draw(context,player,enemy);
+  presentation.draw(context,player,encounter.enemies??enemy);
   status.textContent = `${player.character.name} · HP ${Math.max(0,player.health)}/${player.character.health} · ${paused?'paused':stateLabels[player.mode]} · build ${data.version}`;
   const enemyState=enemy.mode==='neutral'?(enemy.brain?.phase===18&&enemy.brain?.attackStep===4?'leaping':enemy.brain?.state??'stationary'):enemy.mode;
-  document.querySelector('#combat-status').textContent = `${enemy.character.name} · ${stateLabels[enemyState]} · HP ${Math.max(0,enemy.health)}/${enemy.character.health} · ${encounter.hits} landed · ${encounter.receivedHits} received`;
+  document.querySelector('#combat-status').textContent = encounter.enemies?`${encounter.enemies.map(e=>`${e.character.name} ${Math.max(0,e.health)}/${e.character.health}`).join(' · ')} · ${encounter.hits} landed · ${encounter.receivedHits} received`:`${enemy.character.name} · ${stateLabels[enemyState]} · HP ${Math.max(0,enemy.health)}/${enemy.character.health} · ${encounter.hits} landed · ${encounter.receivedHits} received`;
 }
 try {
-  const metadata = await fetch('./assets/game.json?v=946ac5f4a3');
+  const metadata = await fetch('./assets/game.json?v=1202856f76');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
   audio=new GameAudio(data.audio,{onState:state=>{
