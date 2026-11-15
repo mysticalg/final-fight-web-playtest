@@ -11,13 +11,13 @@ export class SectionTransition {
         if(p.weapon){const w=p.weapon;w.hitFrom=p.facing^1;w.dropped=true;p.weapon=null;context.awardScore?.([16,7,18][w.subtype]);}return;
       }
       if(this.state===2){if(!--this.timer)this.state=4;return;}
-      if(this.state===4){p.facing=0;this.state=6;return;}
+      if(this.state===4){p.facing=0;this.state=6;context.unlockCamera?.();return;}
       if(this.state===6){p.action('sectionWalk');this.state=8;return;}
       p.animation.tick();const motion=p.character.sectionMotion,[tx,ty]=context.exitTarget;
       const dx=tx-x()+3,dy=ty-(p.y>>16)+3;
       if((dx&65535)>=6){p.facing=dx<0?1:0;p.x=(p.x+motion.vx*256*(dx<0?-1:1))|0;}
       if((dy&65535)>=6){p.y=(p.y+motion.approachY*256*(dy<0?-1:1))|0;p.groundY=p.y;}
-      if(Math.abs(x()-tx)<=3&&Math.abs((p.groundY>>16)-ty)<=3){this.kind=context.section===0?'streetExit':'roomExit';this.state=0;}
+      if(Math.abs(x()-tx)<=3&&Math.abs((p.groundY>>16)-ty)<=3&&(context.cameraReady?.()??true)){this.kind=context.section===0?'streetExit':'roomExit';this.state=0;}
       return;
     }
     if(this.kind==='streetExit'){

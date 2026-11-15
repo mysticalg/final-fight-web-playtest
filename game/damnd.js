@@ -1,5 +1,5 @@
-import{Animation}from'./animation.js?v=0854a9c44d';
-import{throwHealth}from'./grabs.js?v=0854a9c44d';
+import{Animation}from'./animation.js?v=c93fb57635';
+import{throwHealth}from'./grabs.js?v=c93fb57635';
 const word=n=>n<<16>>16;
 function angle(dx,dy){
   dx=word(dx);dy=word(dy*2);const x=Math.abs(dx),y=Math.abs(dy);
