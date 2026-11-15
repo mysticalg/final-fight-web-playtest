@@ -1,10 +1,10 @@
-import {Player} from './player.js?v=127ac3e7c0';
-import {Enemy} from './enemy.js?v=127ac3e7c0';
-import {BredBrain} from './bred-brain.js?v=127ac3e7c0';
-import {GameRandom} from './enemy-ai.js?v=127ac3e7c0';
-import {contact,incomingContact,canGrab,canComboThrow} from './combat.js?v=127ac3e7c0';
-import {GrabPair} from './grabs.js?v=127ac3e7c0';
-import{CollisionGrid}from'./collision.js?v=127ac3e7c0';
+import {Player} from './player.js?v=899e6b5466';
+import {Enemy} from './enemy.js?v=899e6b5466';
+import {createEnemyBrain} from './j-brain.js?v=899e6b5466';
+import {GameRandom} from './enemy-ai.js?v=899e6b5466';
+import {contact,incomingContact,canGrab,canComboThrow} from './combat.js?v=899e6b5466';
+import {GrabPair} from './grabs.js?v=899e6b5466';
+import{CollisionGrid}from'./collision.js?v=899e6b5466';
 
 // Bounded single-enemy encounter. Stage entry, collision maps and spawn waves
 // remain separate recovery work; the stationary combat test is still available.
@@ -21,7 +21,7 @@ export class Encounter {
       if(this.grab?.held||this.grab?.holding||!canComboThrow(this.data,this.player,this.enemy))return false;
       this.grab=new GrabPair(this.data,this.data.grabs,this.player,this.enemy,this.world.random,{comboThrow:true});return true;
     };
-    if(!stationary)this.enemy.brain=new BredBrain(this.enemy);
+    if(!stationary)this.enemy.brain=createEnemyBrain(this.enemy);
   }
   step(input) {
     this.sounds.length=0;

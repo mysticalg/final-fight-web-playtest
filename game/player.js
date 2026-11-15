@@ -1,7 +1,7 @@
-import {Animation} from './animation.js?v=127ac3e7c0';
-import {receiveHit,updateReaction} from './player-reaction.js?v=127ac3e7c0';
-import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=127ac3e7c0';
-import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=127ac3e7c0';
+import {Animation} from './animation.js?v=899e6b5466';
+import {receiveHit,updateReaction} from './player-reaction.js?v=899e6b5466';
+import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=899e6b5466';
+import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=899e6b5466';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
 // Movement, jump/landing and standing attacks. Contact, grabs and damage
@@ -71,6 +71,7 @@ export class Player {
   update(input) {
     const specialAllowed=['idle','idlePending','walkPending','walk','stopping','landing','postThrow','hurt'].includes(this.mode)||(this.mode==='punch'&&!this.hitStop&&(this.animation.flags&128));
     const pressed=input&~this.previousInput;
+    this.pressedInput=pressed;
     this.suppressComboThrow=specialAllowed&&escapePressed(this,input,pressed);
     this.updateState(input);
     if(this.suppressComboThrow)queueEscape(this);

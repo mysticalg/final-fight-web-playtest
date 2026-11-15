@@ -1,9 +1,9 @@
-import {Encounter}from'./encounter.js?v=127ac3e7c0';
-import {Enemy}from'./enemy.js?v=127ac3e7c0';
-import {BredBrain}from'./bred-brain.js?v=127ac3e7c0';
-import {GrabPair}from'./grabs.js?v=127ac3e7c0';
-import {contact,incomingContact,canGrab,canComboThrow}from'./combat.js?v=127ac3e7c0';
-import{CollisionGrid}from'./collision.js?v=127ac3e7c0';
+import {Encounter}from'./encounter.js?v=899e6b5466';
+import {Enemy}from'./enemy.js?v=899e6b5466';
+import {createEnemyBrain}from'./j-brain.js?v=899e6b5466';
+import {GrabPair}from'./grabs.js?v=899e6b5466';
+import {contact,incomingContact,canGrab,canComboThrow}from'./combat.js?v=899e6b5466';
+import{CollisionGrid}from'./collision.js?v=899e6b5466';
 
 // Original actor order and deferred contact application (8C80 / 3348 / 6F2E).
 // This bounded crowd fixture is separate from stage-driven spawn/progression.
@@ -11,10 +11,10 @@ export class MultiEncounter extends Encounter {
   constructor(data,character=0,{bounds=true,spawns=null,collision=true}={}){
     super(data,character,{bounds});
     if(collision&&data.collision){this.world.collision=new CollisionGrid(data.collision,data.stage.cameraX);this.player.collision=this.world.collision;}
-    spawns??=[{variant:0,dx:72,dy:0},{variant:1,dx:104,dy:12},{variant:2,dx:136,dy:0}];
+    spawns??=[{variant:0,dx:72,dy:0},{variant:4,dx:104,dy:12},{variant:5,dx:136,dy:0}];
     this.enemies=spawns.map(({variant=0,dx=0,dy=0,health})=>{
       const e=new Enemy(data,this.player.x+dx*65536,this.player.y+dy*65536,0,variant);
-      if(health!==undefined)e.health=health;e.brain=new BredBrain(e);e.onSound=command=>this.sounds.push(command);return e;
+      if(health!==undefined)e.health=health;e.brain=createEnemyBrain(e);e.onSound=command=>this.sounds.push(command);return e;
     });
     this.enemy=this.enemies[0];
     this.player.comboThrow=()=>{

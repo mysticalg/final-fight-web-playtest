@@ -1,4 +1,4 @@
-import {escapePressed,queueEscape} from './player-specials.js?v=127ac3e7c0';
+import {escapePressed,queueEscape} from './player-specials.js?v=899e6b5466';
 // Shared grab helpers: 004180, 00D87A, 003F40, 00D972 and 00D99E.
 const word=value=>value<<16>>16;
 const offsetWord=(position,offset)=>((word((position>>16)+offset)<<16)|(position&65535))|0;
@@ -32,6 +32,7 @@ export class GrabPair {
   constructor(data,rules,holder,victim,random,{comboThrow=false}={}) {
     this.data=data;this.rules=rules;this.holder=holder;this.victim=victim;this.random=random;
     this.character=rules.characters[holder.characterIndex];
+    this.attachmentRows=this.character.attachmentsByFamily?.[victim.character.family??0]??this.character.attachments;
     this.enemyPoses=this.character.enemyVariants?.[victim.variant]??this.character.enemyPoses;
     this.victimMode=victim.mode;this.victimQueued=true;
     this.holding=true;this.held=true;holder.mode='grabInit';victim.mode='heldPending';
@@ -57,6 +58,7 @@ export class GrabPair {
   }
   updateHolder(input) {
     const oldMode=this.holder.mode,pressed=input&~this.holder.previousInput;
+    this.holder.pressedInput=pressed;
     this.haggar=this.holder.characterIndex===2;
     if(this.queued){this.queued=false;this.holder.hitStop=0;}
     this.updateHolderState(input);
@@ -168,7 +170,7 @@ export class GrabPair {
       if(this.cancelBeforeVictim){this.held=false;v.mode=this.victimMode;return false;}
       v.hitStop=0;
     }
-    const status=attachHeld(this.holder,v,this.character.attachments);
+    const status=attachHeld(this.holder,v,this.attachmentRows);
     if(status===0) {
       v.mode='held';v.animation.set(this.enemyPoses[v.attachment&127]);v.imageOffset=0;
       if(!this.holding){this.held=false;v.mode=(v.y>>16)>(v.groundY>>16)?'releasedFallPending':'releasedPending';}

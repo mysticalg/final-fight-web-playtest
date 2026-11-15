@@ -30,8 +30,8 @@ export function accelerateApproach(actor) {
 }
 
 // 027D32: full 16.16 displacement, including direction/facing animation choice.
-export function advanceApproach(actor,target,slots) {
-  accelerateApproach(actor);
+export function advanceApproach(actor,target,slots,{accelerate=true}={}) {
+  if(accelerate)accelerateApproach(actor);
   const [dx,dy]=slots[actor.positionSlot];
   let movedX=false,movedY=false;
   let delta=word((target.x>>16)+dx-(actor.x>>16)+8);
