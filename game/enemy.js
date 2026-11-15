@@ -1,4 +1,4 @@
-import {Animation} from './animation.js?v=c0669bde75';
+import {Animation} from './animation.js?v=63dd6de543';
 const word = value => value << 16 >> 16;
 
 // Actor with an optional recovered Bred controller. Leaving brain unset selects
@@ -30,9 +30,30 @@ export class Enemy {
   updateState(world,target) {
     if(this.mode==='neutral'){if(this.brain)this.brain.update(world,target);return;}
     if(this.mode==='defeated')return;
+    if(this.mode==='releasedFallPending'){
+      this.speedX=this.speedY=0;this.vx=this.vy=0;this.mode='releasedFall';this.action('neutral');return;
+    }
+    if(this.mode==='releasedFall'){
+      this.integrate();if((this.y>>16)<=(this.groundY>>16)){this.y=this.groundY;this.mode='releasedFloorWait';this.releaseTimer=20;}return;
+    }
+    if(this.mode==='releasedFloorWait'){
+      if(!--this.releaseTimer){this.mode='neutral';if(this.brain)this.brain.seek(world);else this.action('neutral');}return;
+    }
+    if(this.mode==='releasedPending'){
+      this.speedX=this.speedY=0;this.releaseTimer=this.data.grabs.releaseWait[world.random.next()&31];this.mode='releasedWait';this.action('neutral');
+      if((world.frame&7)===0)this.facing=(target.x>>16)<(this.x>>16)?1:0;return;
+    }
+    if(this.mode==='releasedWait'){
+      if(!--this.releaseTimer){this.mode='neutral';if(this.brain){this.brain.state='seek';this.brain.phase=0;}}
+      if((world.frame&7)===0)this.facing=(target.x>>16)<(this.x>>16)?1:0;return;
+    }
     if(this.mode==='hurtPending') {
       // 0272E8 / 027334 / 02734A / 0273D2: first punches use types zero/one.
       this.facing=this.hitFrom^1; this.direction=this.hitFrom;
+      if(this.reaction===5||this.reaction===6){
+        if(this.reaction===6)this.direction^=1;
+        this.mode='slamInit';this.action('grabFall');return;
+      }
       if(this.health<0||this.reaction===3) {
         this.y=(this.y+52*65536)|0; this.mode='fallInit'; this.action('fall');
       } else { this.mode='hurt'; this.action(this.reaction===1||this.reaction===2?'hurt1':'hurt'); }
@@ -55,6 +76,20 @@ export class Enemy {
     }
     // 027808: fatal knockback shares original fall/bounce/slide states.
     if(this.hitStop) { this.hitStop--; return; }
+    if(this.mode==='slamInit') {
+      this.vy=this.reaction===5?0x380:0x300;this.vx=0x200*(this.direction?-1:1);this.mode='slamFlight';return;
+    }
+    if(this.mode==='slamFlight') {
+      this.integrate();
+      if((this.y>>16)<=(this.groundY>>16)){
+        this.y=this.groundY;this.facing^=1;this.action('down');this.mode='slamSlide';
+        this.vx=0x100*(this.direction?-1:1);this.drag=20*(this.direction?-1:1);
+      }return;
+    }
+    if(this.mode==='slamSlide') {
+      this.animation.tick();const next=word(this.vx-this.drag);this.vx=(this.vx>=0)===(next>=0)?next:0;this.x=(this.x+this.vx*256)|0;
+      if(!this.vx){this.mode=this.health<0?'defeated':'recoverInit';if(this.brain)this.brain.release(world);}return;
+    }
     if(this.mode==='fallInit') {
       this.vy=this.health<0?0x300:0x380;
       this.vx=(this.health<0?0x400:0x200)*(this.direction?-1:1); this.mode='fall'; return;

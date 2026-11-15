@@ -2,12 +2,18 @@
 export class Presentation {
   constructor(data, background, sprites) { this.data = data; this.background = background; this.sprites = sprites; }
   static async load(data) {
-    const image = path => new Promise((resolve,reject) => {
+    const attempt = path => new Promise((resolve,reject) => {
       const result = new Image();
       result.onload = () => resolve(result);
       result.onerror = () => reject(new Error(`Could not load game graphic: ${path}`));
       result.src = path;
     });
+    const image=async path=>{
+      for(let retry=0;;retry++){
+        try{return await attempt(retry?`${path}${path.includes('?')?'&':'?'}retry=${retry}`:path);}
+        catch(error){if(retry===2)throw error;}
+      }
+    };
     const background = await image(data.background);
     const entries=Object.entries(data.sprites),sprites=new Map();
     let next=0;

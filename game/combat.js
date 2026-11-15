@@ -28,6 +28,7 @@ export function attackDamage(combat,attack,defenseIndex=0) {
 export function contact(data,player,enemy) {
   const image=data.images[player.animation.image];
   if(!image.attackIndex)enemy.hitLatch=false;
+  if(image.attackIndex&128)return false;
   if(!['punch','airborne'].includes(player.mode))return false;
   if(enemy.hitLatch||enemy.health<0)return false;
   // 0033EE / 008D32: ordinary player attack queue, including asymmetric depth.
@@ -42,6 +43,14 @@ export function contact(data,player,enemy) {
   player.hitStop=6;
   player.comboWindow=45;
   return true;
+}
+export function canGrab(data,player,enemy) {
+  const image=data.images[player.animation.image];
+  if(!(image.attackIndex&128)||player.grabSuppressed||player.mode==='dead'||enemy.health<0||enemy.pendingReaction)return false;
+  if((player.y>>16)!==(player.groundY>>16)||(enemy.y>>16)!==(enemy.groundY>>16))return false;
+  const dx=((enemy.x>>16)-(player.x>>16)+128)&65535,depth=word((enemy.groundY>>16)-(player.groundY>>16));
+  if(dx>256||depth < -12||depth > 9)return false;
+  return boxesOverlap(resolveBoxes(player,image).attack,resolveBoxes(enemy,data.images[enemy.animation.image]).hurt);
 }
 export function incomingContact(data,enemy,player) {
   const image=data.images[enemy.animation.image];

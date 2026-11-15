@@ -1,13 +1,14 @@
-import {Animation} from './animation.js?v=c0669bde75';
-import {receiveHit,updateReaction} from './player-reaction.js?v=c0669bde75';
-import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=c0669bde75';
+import {Animation} from './animation.js?v=63dd6de543';
+import {receiveHit,updateReaction} from './player-reaction.js?v=63dd6de543';
+import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=63dd6de543';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
-// Free movement, jump/landing and first standing punch. Damage reactions and
-// contact use separate modules; grabs, combos and weapons remain open.
+// Movement, jump/landing and standing attacks. Contact, grabs and damage
+// reactions use separate modules; weapons remain incomplete.
 export class Player {
   constructor(data, character = 0) {
     this.data = data;
+    this.characterIndex=character;
     this.character = data.characters[character];
     this.x = data.stage.spawn.x;
     this.y = this.groundY = data.stage.spawn.y;
@@ -63,12 +64,24 @@ export class Player {
     if(!this.attackActive&&this.comboWindow)this.comboWindow--;
     // 00A79A: timer maintenance follows the state handler.
     if(this.invulnerable)this.invulnerable--;
+    if(this.grabCooldown)this.grabCooldown--;
   }
   updateState(input) {
     const previous = this.previousInput;
     const pressed = input & ~previous;
     this.previousInput = input;
     if(updateReaction(this,input,pressed,previous))return;
+    if(this.mode==='postPile') {
+      this.invulnerable=Math.max(this.invulnerable,34);this.grabCooldown=this.data.grabs.haggarCooldown[this.worldRandom.next()&31];
+      this.mode='postPileAir';this.groundY=this.y;this.vy=0x300;this.vx=this.facing?0x300:-0x300;this.drag=this.facing?5:-5;this.action('postPile');return;
+    }
+    if(this.mode==='postPileAir') {
+      this.integrateJump();if((this.y>>16)<=(this.groundY>>16)){this.y=this.groundY;this.mode='landingPending';}else this.animation.tick();return;
+    }
+    if(this.mode==='postThrow') {
+      this.animation.tick();if(this.animation.flags&128)this.mode='idlePending';
+      if(pressed&32)this.mode='jumpPending';if(pressed&16)queueStanding(this);return;
+    }
     // 00B3A4: standing attacks consume hit-stop without advancing animation.
     if (this.hitStop && ['punch','punchPending','airborne'].includes(this.mode)) { this.hitStop--; return; }
     if (['punchPending','punch'].includes(this.mode)) {
