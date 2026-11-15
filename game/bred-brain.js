@@ -1,4 +1,4 @@
-import {advanceApproach,reachedPosition,faceTarget} from './enemy-ai.js?v=3eb60d19d2';
+import {advanceApproach,reachedPosition,faceTarget} from './enemy-ai.js?v=95334e3459';
 const word=value=>value<<16>>16;
 
 // Bred family zero, one-player/no-wall encounter controller. Source: 021FC4,
@@ -42,7 +42,7 @@ export class BredBrain {
     if(actor.hitStop){actor.hitStop--;return;}
     if(!this.phase){
       if(object)actor.facing=(actor.x>>16)<(object.x>>16)?0:1;
-      this.phase=2;actor.action(actor.character.family===1?'jab':'strike');return;
+      this.phase=2;actor.action(actor.character.family?'jab':'strike');return;
     }
     actor.animation.tick();
     if(this.phase===2){
@@ -52,7 +52,7 @@ export class BredBrain {
     }else if(actor.animation.flags&128){
       this.state='seek';this.phase=0;actor.action('neutral');
       actor.running=false;
-      if(actor.character.family!==1){actor.desiredSpeedX=0x20000;actor.desiredSpeedY=0x10000;}
+      if(actor.character.family!==1){actor.desiredSpeedX=actor.character.family===2?0x23300:0x20000;actor.desiredSpeedY=actor.character.family===2?0x11900:0x10000;}
     }
   }
   choosePosition(world,target) {

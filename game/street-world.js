@@ -1,16 +1,16 @@
-import{MultiEncounter}from'./multi-encounter.js?v=3eb60d19d2';
-import{StageEnemy}from'./stage-enemy.js?v=3eb60d19d2';
-import{Prop}from'./prop.js?v=3eb60d19d2';
-import{Pickup,collectPickup}from'./pickup.js?v=3eb60d19d2';
-import{StageCollision}from'./stage-collision.js?v=3eb60d19d2';
-import{StageBoundary}from'./stage-boundaries.js?v=3eb60d19d2';
-import{StageSpawns}from'./stage-spawns.js?v=3eb60d19d2';
-import{ActorPool,EnemyLimits}from'./stage-pools.js?v=3eb60d19d2';
-import{advanceCamera,advanceParallax}from'./stage-camera.js?v=3eb60d19d2';
-import{updatePositionSlots}from'./position-slots.js?v=3eb60d19d2';
-import{contact,incomingContact,canGrab}from'./combat.js?v=3eb60d19d2';
-import{GrabPair}from'./grabs.js?v=3eb60d19d2';
-import{Player}from'./player.js?v=3eb60d19d2';
+import{MultiEncounter}from'./multi-encounter.js?v=95334e3459';
+import{StageEnemy}from'./stage-enemy.js?v=95334e3459';
+import{Prop}from'./prop.js?v=95334e3459';
+import{Pickup,collectPickup}from'./pickup.js?v=95334e3459';
+import{StageCollision}from'./stage-collision.js?v=95334e3459';
+import{StageBoundary}from'./stage-boundaries.js?v=95334e3459';
+import{StageSpawns}from'./stage-spawns.js?v=95334e3459';
+import{ActorPool,EnemyLimits}from'./stage-pools.js?v=95334e3459';
+import{advanceCamera,advanceParallax}from'./stage-camera.js?v=95334e3459';
+import{updatePositionSlots}from'./position-slots.js?v=95334e3459';
+import{contact,incomingContact,canGrab}from'./combat.js?v=95334e3459';
+import{GrabPair}from'./grabs.js?v=95334e3459';
+import{Player}from'./player.js?v=95334e3459';
 
 // Continuous Slum gameplay. Original spawn schedules feed the same actor pools
 // as the player walks between areas; cutscene effects remain separate work.

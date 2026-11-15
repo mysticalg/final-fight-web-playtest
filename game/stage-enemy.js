@@ -1,6 +1,6 @@
-import{Enemy}from'./enemy.js?v=3eb60d19d2';
-import{createEnemyBrain}from'./j-brain.js?v=3eb60d19d2';
-import{faceTarget}from'./enemy-ai.js?v=3eb60d19d2';
+import{Enemy}from'./enemy.js?v=95334e3459';
+import{createEnemyBrain}from'./j-brain.js?v=95334e3459';
+import{faceTarget}from'./enemy-ai.js?v=95334e3459';
 const word=n=>n<<16>>16;
 
 // Original family 0/1 initialization and ordinary parameter 0–3 entry waits.

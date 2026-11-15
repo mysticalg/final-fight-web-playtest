@@ -1,5 +1,5 @@
-import{CollisionGrid}from'./collision.js?v=3eb60d19d2';
-import{StageMap}from'./stage-map.js?v=3eb60d19d2';
+import{CollisionGrid}from'./collision.js?v=95334e3459';
+import{StageMap}from'./stage-map.js?v=95334e3459';
 
 // The video ring map is a cache of these complete stage attributes. Native
 // gameplay reads the complete map directly as the camera scrolls.
