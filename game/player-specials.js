@@ -10,6 +10,7 @@ export function updateSpecial(player) {
     if(player.previousInput&2){player.facing=1;player.direction=8;}
     if(player.previousInput&1){player.facing=0;player.direction=8;}
     player.escapeHit=false;player.action('escape');
+    player.sound([12,28,29][player.characterIndex]);
     player.mode=player.characterIndex===2?'escapeLanding':'escape';
     if(player.characterIndex!==2){player.groundY=player.y;player.vy=player.characterIndex===0?0x600:0x700;player.vx=player.drag=0;}
     return true;

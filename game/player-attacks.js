@@ -14,6 +14,7 @@ export function standingUpdate(player,input,pressed) {
     if(input&2){player.facing=1;player.direction=8;}
     if(input&1){player.facing=0;player.direction=8;}
     player.mode='punch';player.animation.set(player.character.combo[player.punchStage??0]);player.imageOffset=0;
+    player.sound([[47,47,null,null,2],[47,47,null,3],[47,47,3]][player.characterIndex][player.punchStage??0]);
     return;
   }
   const flags=player.animation.flags;
@@ -34,10 +35,12 @@ export function airAttack(player,input,pressed) {
   if(input&4) {
     if(player.airDownUsed)return;
     player.airDownUsed=true;
+    if(player.characterIndex===2)player.sound(10);
     const backwards=player.vx&&((player.vx<0)!==!!player.facing);
     player.action(backwards?'airDownBackward':'airDown');return;
   }
   if(player.vx&&((player.vx<0)!==!!player.facing))return;
   if(player.airAttackUsed)return;
   player.airAttackUsed=true;player.action(player.vx?'airForward':'airStanding');
+  player.sound([5,27,8][player.characterIndex]);
 }

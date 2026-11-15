@@ -1,7 +1,7 @@
-import {Animation} from './animation.js?v=47e20c535b';
-import {receiveHit,updateReaction} from './player-reaction.js?v=47e20c535b';
-import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=47e20c535b';
-import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=47e20c535b';
+import {Animation} from './animation.js?v=946ac5f4a3';
+import {receiveHit,updateReaction} from './player-reaction.js?v=946ac5f4a3';
+import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=946ac5f4a3';
+import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=946ac5f4a3';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
 // Movement, jump/landing and standing attacks. Contact, grabs and damage
@@ -29,6 +29,7 @@ export class Player {
     this.animation = new Animation(data.animationEntries, this.character.actions.idle);
   }
   action(name) { this.animation.set(this.character.actions[name]); this.imageOffset=0; }
+  sound(command) { if(command!==null&&command!==undefined)this.onSound?.(command); }
   hit(damage,reaction,facing) { receiveHit(this,damage,reaction,facing); }
   startReaction() { this.pendingReaction=false;this.mode='hurtPending';this.comboCounter=0;this.comboWindow=0;this.attackActive=false; }
   chooseDirection(input) {

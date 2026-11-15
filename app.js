@@ -1,6 +1,7 @@
-import {Encounter} from './game/encounter.js?v=47e20c535b';
-import {Presentation} from './game/presentation.js?v=47e20c535b';
-import {readGamepad} from './game/gamepad.js?v=47e20c535b';
+import {Encounter} from './game/encounter.js?v=946ac5f4a3';
+import {Presentation} from './game/presentation.js?v=946ac5f4a3';
+import {readGamepad} from './game/gamepad.js?v=946ac5f4a3';
+import {GameAudio} from './game/audio.js?v=946ac5f4a3';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -8,7 +9,10 @@ const status = document.querySelector('#status');
 const character = document.querySelector('#character');
 const keys = new Set(), touch = new Set();
 const bindings = {ArrowRight:1, ArrowLeft:2, ArrowDown:4, ArrowUp:8, KeyZ:16, KeyX:32, KeyC:48};
-let paused = false, encounter, player, enemy, data, presentation;
+let paused = false, encounter, player, enemy, data, presentation, audio;
+const audioButton=document.querySelector('#audio');
+audioButton.addEventListener('click',()=>{if(audio?.enabled)audio.disable();else audio?.enable();});
+document.addEventListener('visibilitychange',()=>audio?.setHidden(document.hidden));
 let gamepadState = null, gamepadInput = 0, pulseInput = 0;
 const controllerStatus = document.querySelector('#controller-status');
 const stateLabels={leaping:'jumping',escapePending:'special',escape:'special',escapeLanding:'recovering',grabInit:'grabbing',grabHoldPending:'holding',grabHold:'holding',grabCarryPending:'carrying',grabCarry:'carrying',grabKneePending:'knee strike',grabKnee:'knee strike',grabThrowPending:'throwing',grabThrow:'throwing',grabThrowRelease:'throwing',grabJumpPending:'jumping',grabJumpStart:'jumping',grabJumpAir:'jumping',grabJumpLand:'landing',grabPileRelease:'piledriver',postPile:'recovering',postPileAir:'recovering',postThrow:'recovering',heldPending:'grabbed',held:'grabbed',thrownPending:'thrown',thrown:'thrown',thrownBounce:'falling',thrownSlide:'falling',slamInit:'falling',slamFlight:'falling',slamSlide:'falling',releasedPending:'recovering',releasedWait:'recovering',releasedFallPending:'falling',releasedFall:'falling',releasedFloorWait:'recovering',idle:'ready',walkPending:'walking',walk:'walking',stopping:'ready',idlePending:'ready',punchPending:'punching',punch:'punching',jumpPending:'jumping',jumpStart:'jumping',airborne:'jumping',landingPending:'landing',landing:'landing',hurtPending:'hit',hurt:'hit',knockdownInit:'knocked down',knockdown:'knocked down',hurtBounce:'knocked down',hurtSlide:'knocked down',recoverPending:'getting up',recoverInit:'getting up',recoverWait:'knocked down',recover:'getting up',dead:'defeated',seek:'looking',choosePosition:'repositioning',approach:'approaching',runInit:'closing in',run:'closing in',attack:'attacking',waitPosition:'waiting',fallInit:'falling',fall:'falling',bounce:'falling',slide:'falling',defeated:'defeated',stationary:'stationary'};
@@ -28,6 +32,7 @@ function reset() {
   if (!data) return;
   encounter = new Encounter(data,character.selectedIndex,{stationary:document.querySelector('#encounter-mode').value==='stationary',enemyVariant:document.querySelector('#enemy').selectedIndex});
   player=encounter.player;enemy=encounter.enemy;
+  audio?.restart();
   canvas.setAttribute('aria-label',`Native Final Fight encounter. Arrow keys move, Z punches, X jumps. ${enemy.character.name} ${encounter.stationary?'is a stationary target':'approaches and attacks'}.`);
   clearInput(); canvas.focus();
   if(presentation)draw();
@@ -38,6 +43,7 @@ document.querySelector('#encounter-mode').addEventListener('change',reset);
 document.querySelector('#reset').addEventListener('click', reset);
 function togglePause() {
   paused = !paused; clearInput(); document.querySelector('#pause').textContent = paused ? 'Resume' : 'Pause'; canvas.focus();
+  audio?.setPaused(paused);
   if(presentation)draw();
 }
 document.querySelector('#pause').addEventListener('click', togglePause);
@@ -70,6 +76,7 @@ function input() {
 function step() {
   if (paused) return;
   encounter.step(input());
+  audio?.play(encounter.sounds);
   pulseInput = 0;
 }
 function draw() {
@@ -79,9 +86,15 @@ function draw() {
   document.querySelector('#combat-status').textContent = `${enemy.character.name} · ${stateLabels[enemyState]} · HP ${Math.max(0,enemy.health)}/${enemy.character.health} · ${encounter.hits} landed · ${encounter.receivedHits} received`;
 }
 try {
-  const metadata = await fetch('./assets/game.json?v=47e20c535b');
+  const metadata = await fetch('./assets/game.json?v=946ac5f4a3');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
+  audio=new GameAudio(data.audio,{onState:state=>{
+    audioButton.disabled=state==='loading';
+    audioButton.textContent=({loading:'Loading audio…',enabled:'Mute audio',disabled:'Enable audio',error:'Retry audio'})[state];
+    document.querySelector('#audio-status').textContent=({loading:'Loading original music and effects…',enabled:'Original Slum music and recovered combat effects enabled.',disabled:'Audio off.',error:'Audio could not start. Select Retry audio to try again.'})[state];
+  }});
+  audio.setHidden(document.hidden);audioButton.disabled=false;
   presentation = await Presentation.load(data);
   reset(); draw();
   let previous = performance.now(), accumulator = 0;

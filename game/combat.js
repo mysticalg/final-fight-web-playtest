@@ -41,6 +41,7 @@ export function contact(data,player,enemy) {
   if(!boxesOverlap(attack,hurt))return false;
   // 007330: latch, damage, orientation and six-frame attacker/victim hit-stop.
   enemy.hit(attackDamage(player.combat,attack,enemy.defenseIndex),attack.reaction,player.facing);
+  player.sound?.(attack.sound);
   player.hitStop=6;
   player.comboWindow=45;
   if(special)player.escapeHit=true;
@@ -75,6 +76,7 @@ export function incomingContact(data,enemy,player) {
   if(!boxesOverlap(attack,hurt))return false;
   // 007526 / 007592 uses 0079C6 (base damage, without defense adjustment).
   player.hit(attackDamage(enemy.combat,attack),attack.reaction,enemy.facing);
+  enemy.sound?.(attack.sound);
   enemy.hitStop=6;
   return true;
 }
