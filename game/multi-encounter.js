@@ -1,16 +1,16 @@
-import {Encounter}from'./encounter.js?v=5840963097';
-import {Enemy}from'./enemy.js?v=5840963097';
-import {BredBrain}from'./bred-brain.js?v=5840963097';
-import {GrabPair}from'./grabs.js?v=5840963097';
-import {contact,incomingContact,canGrab,canComboThrow}from'./combat.js?v=5840963097';
-import{CollisionGrid}from'./collision.js?v=5840963097';
+import {Encounter}from'./encounter.js?v=effc370320';
+import {Enemy}from'./enemy.js?v=effc370320';
+import {BredBrain}from'./bred-brain.js?v=effc370320';
+import {GrabPair}from'./grabs.js?v=effc370320';
+import {contact,incomingContact,canGrab,canComboThrow}from'./combat.js?v=effc370320';
+import{CollisionGrid}from'./collision.js?v=effc370320';
 
 // Original actor order and deferred contact application (8C80 / 3348 / 6F2E).
 // This bounded crowd fixture is separate from stage-driven spawn/progression.
 export class MultiEncounter extends Encounter {
   constructor(data,character=0,{bounds=true,spawns=null,collision=true}={}){
     super(data,character,{bounds});
-    if(collision&&data.collision)this.world.collision=new CollisionGrid(data.collision,data.stage.cameraX);
+    if(collision&&data.collision){this.world.collision=new CollisionGrid(data.collision,data.stage.cameraX);this.player.collision=this.world.collision;}
     spawns??=[{variant:0,dx:72,dy:0},{variant:1,dx:104,dy:12},{variant:2,dx:136,dy:0}];
     this.enemies=spawns.map(({variant=0,dx=0,dy=0,health})=>{
       const e=new Enemy(data,this.player.x+dx*65536,this.player.y+dy*65536,0,variant);

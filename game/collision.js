@@ -1,4 +1,6 @@
 const word=value=>value<<16>>16;
+// Response precedence for the two sides of a grounded actor (007CFE).
+const widePriority=[0,1,1,0,1,0,0,0,0,0,1,1,1,1,0,0,0,0,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0];
 // Original 16px tile responses (007FA8–0082A8). Curves are recovered data,
 // not executable instructions. X/Y arguments are signed integer world words.
 export function tileResponse(kind,x,y,curves){
@@ -51,6 +53,16 @@ export class CollisionGrid{
         actor.collisionType=next.response;actor.collisionTile=next.kind;
         actor.x=(actor.x+next.dx*65536)|0;actor.y=(actor.y+next.dy*65536)|0;actor.groundY=(actor.groundY+next.dy*65536)|0;
       }
+    }
+    return actor.collisionType;
+  }
+  resolveWide(actor,width=16){
+    const offset=actor.facing?-width:width;
+    this.resolve(actor,offset);
+    const firstType=actor.collisionType,firstTile=actor.collisionTile;
+    this.resolve(actor,-offset);
+    if(widePriority[((actor.collisionType+1)<<3)+(firstType+1)]){
+      actor.collisionType=firstType;actor.collisionTile=firstTile;
     }
     return actor.collisionType;
   }

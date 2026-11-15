@@ -1,7 +1,7 @@
-import {Animation} from './animation.js?v=5840963097';
-import {receiveHit,updateReaction} from './player-reaction.js?v=5840963097';
-import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=5840963097';
-import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=5840963097';
+import {Animation} from './animation.js?v=effc370320';
+import {receiveHit,updateReaction} from './player-reaction.js?v=effc370320';
+import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=effc370320';
+import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=effc370320';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
 // Movement, jump/landing and standing attacks. Contact, grabs and damage
@@ -30,6 +30,7 @@ export class Player {
   }
   action(name) { this.animation.set(this.character.actions[name]); this.imageOffset=0; }
   sound(command) { if(command!==null&&command!==undefined)this.onSound?.(command); }
+  groundCollision() { this.collision?.resolveWide(this,16); }
   hit(damage,reaction,facing) { receiveHit(this,damage,reaction,facing); }
   startReaction() { this.pendingReaction=false;this.mode='hurtPending';this.comboCounter=0;this.comboWindow=0;this.attackActive=false; }
   chooseDirection(input) {
@@ -87,12 +88,14 @@ export class Player {
     }
     if(this.mode==='postThrow') {
       this.animation.tick();if(this.animation.flags&128)this.mode='idlePending';
+      this.groundCollision();
       if(pressed&32)this.mode='jumpPending';if(pressed&16)queueStanding(this,input);return;
     }
     // 00B3A4: standing attacks consume hit-stop without advancing animation.
     if (this.hitStop && ['punch','punchPending','airborne'].includes(this.mode)) { this.hitStop--; return; }
     if (['punchPending','punch'].includes(this.mode)) {
       standingUpdate(this,input,pressed);
+      this.groundCollision();
       return;
     }
     if(this.mode==='jumpPending') {
@@ -132,6 +135,7 @@ export class Player {
       this.animation.tick();
       if (input & 3) this.chooseDirection(input);
       if (((input & 3) && this.direction !== 8) || (this.animation.flags & 128)) this.mode = 'idlePending';
+      this.groundCollision();
       if(pressed&32)this.mode='jumpPending';
       if(pressed&16)queueStanding(this,input);
       return;
@@ -151,6 +155,7 @@ export class Player {
     } else {
       this.animation.tick();this.chooseDirection(input);if(this.direction!==8)this.mode='walkPending';
     }
+    this.groundCollision();
     if(pressed&32)this.mode='jumpPending';
     if(pressed&16)queueStanding(this,input);
   }
