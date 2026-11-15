@@ -2,7 +2,7 @@
   "version": "a063fff218",
   "files": {
     ".nojekyll": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "app.js": "63d6b571c7e545edc140b6370d277a72398fe825a4d67bdf996f1eeb8a04f0c2",
+    "app.js": "0e8e68a9fb72b01db9fcd886a0366ea9166166c589c94e632903c4eb1de631d5",
     "assets/game.json": "8caf211cd629bc0c87b4f63141d418f48df03695ce36ed4577d61eaaf5d3fdc7",
     "assets/slum-opening.png": "d5a5b3e959c13c6732d70feaf1c54f45192bc7868bfec56534caa9e87dc05396",
     "assets/sprites/frame-0-0.png": "324f7bf8373f15c81577edd5fc05f51b01fe8cb5d88078bedfa2c834b3ab4369",
@@ -129,12 +129,12 @@
     "assets/sprites/frame-8-1.png": "5d989cc2f9fe02db0acda0503be9d9856f422e4e1e6d85a564e2c8f954037c44",
     "assets/sprites/frame-9-0.png": "ef324615889bab4b92299cc651ec506a3be98cec973331dc1b15c229629a40d5",
     "assets/sprites/frame-9-1.png": "a31522428d059d1106c34c9f8c7eeb381f04caecabc7e23fede51e7fd87e5599",
-    "game/animation.js": "3d127aa37942178abbec515f377d011d213bc8de27d87148272c04f6019d5b35",
-    "game/gamepad.js": "b55079fe5d616285b83082472e0330ae2abce476140003a177a1fe0879cac6f3",
-    "game/player.js": "6d5a8c470188be28e9205c70215178603140be45967a3b56f62998f486c4fc31",
-    "game/presentation.js": "f49ecb14c21ab979f7de0e823a7eaed06290fa6f4df56928ef00b8e5c2724c28",
-    "index.html": "5b815cc422d7e6bcd83792e399d5e9f7766d55926fe3011b1ea8d7267980b329",
-    "README.md": "aa771511e3edfdbc5eac181ac1e936f96ab940d7545c23a37bbd995de633b693",
-    "style.css": "3ae8521d403adafdc705fe5d976d5f9d24e82e45905cdb39a68d791c70da543d"
+    "game/animation.js": "dac0d82c058e915fecd0f51bb1de0b4018a3083a4dfcfa35233825ebeba94609",
+    "game/gamepad.js": "cf29abefeda69a5b1d50d6937bbf885cc8497785837f753ea61b31faafdf802b",
+    "game/player.js": "6a4c270be9f1106ff4c859a58670e6b79c0ec32a13b8dc2c25cb3583ae547beb",
+    "game/presentation.js": "a0093495e1cb34661398f3d01b3bdfce0f550fb88bd9c06438773fe16cfa415f",
+    "index.html": "ef737899b8499a3d03e377ea0d7fbe4a0e4628ba92d65ce35bbe3445ac43bd69",
+    "README.md": "2dcc071ec0bd06dc21b07cf5d0e011a57ee84a1f1e0d37c3ea75fbc9b13dcd90",
+    "style.css": "b2310635dd00c49376f27c76368550478fe0a747ad69e291671e10e9c7d907dd"
   }
 }
