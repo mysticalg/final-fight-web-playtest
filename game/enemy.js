@@ -1,8 +1,8 @@
-import {Animation} from './animation.js?v=4ff6cbb6d1';
+import {Animation} from './animation.js?v=1bb9bc2b0d';
 const word = value => value << 16 >> 16;
 
-// Stationary research target. AI is deliberately absent; reaction states below
-// translate Bred's original handlers, rather than supplying substitute AI.
+// Actor with an optional recovered Bred controller. Leaving brain unset selects
+// the stationary research target; reaction states translate original handlers.
 export class Enemy {
   constructor(data, x, y, facing=1) {
     this.data=data; this.character=data.enemies[0]; this.combat=this.character.combat;
@@ -14,15 +14,22 @@ export class Enemy {
   action(name) { this.animation.set(this.character.actions[name]); this.imageOffset=0; }
   hit(damage,reaction,facing) {
     this.health=word(this.health-damage); this.reaction=reaction; this.hitFrom=facing;
-    this.hitStop=6; this.hitLatch=true; this.mode='hurtPending';
+    this.hitStop=6; this.hitLatch=true; this.pendingReaction=true;
   }
+  startReaction() { this.pendingReaction=false;this.mode='hurtPending'; }
   integrate() {
     // 00309A: X velocity is constant; apply gravity before Y displacement.
     this.x=(this.x+this.vx*256)|0; this.vy=word(this.vy-0x48);
     this.y=(this.y+this.vy*256)|0;
   }
-  update() {
-    if(this.mode==='neutral'||this.mode==='defeated')return;
+  update(world,target) {
+    this.updateState(world,target);
+    // 022BC0 observes health changes after the actor's current handler.
+    if(this.pendingReaction)this.startReaction();
+  }
+  updateState(world,target) {
+    if(this.mode==='neutral'){if(this.brain)this.brain.update(world,target);return;}
+    if(this.mode==='defeated')return;
     if(this.mode==='hurtPending') {
       // 0272E8 / 027334 / 02734A / 0273D2: first punches use types zero/one.
       this.facing=this.hitFrom^1; this.direction=this.hitFrom;
@@ -34,11 +41,16 @@ export class Enemy {
     if(this.mode==='hurt') {
       // 0273E4: animation continues during enemy hit-stop; shake waits.
       if(this.hitStop) { this.hitStop--; this.animation.tick(); return; }
-      const oldImage=this.animation.image;
+      const oldEntry=this.animation.address;
       this.animation.tick();
-      if(this.animation.image!==oldImage)this.imageOffset=0;
+      if(this.animation.address!==oldEntry)this.imageOffset=0;
       this.imageOffset=word(this.imageOffset+(this.character.hurtShake[this.animation.remaining]??0));
-      if(this.animation.flags&128) { this.mode='neutral'; this.action('neutral'); }
+      if(this.animation.flags&128) {
+        this.mode='neutral';
+        if(this.brain?.reserved){this.brain.state='attack';this.brain.phase=0;this.running=true;this.action('run');}
+        else if(this.brain)this.brain.seek(world);
+        else this.action('neutral');
+      }
       return;
     }
     // 027808: fatal knockback shares original fall/bounce/slide states.

@@ -3,18 +3,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Final Fight — native JavaScript</title>
-<link rel="stylesheet" href="style.css?v=4ff6cbb6d1">
+<link rel="stylesheet" href="style.css?v=1bb9bc2b0d">
 <main>
-<header><h1>FINAL FIGHT</h1><p>Native JavaScript · first-stage combat test</p></header>
+<header><h1>FINAL FIGHT</h1><p>Native JavaScript · Bred encounter build</p></header>
 <div class="toolbar"><label>Character <select id="character"><option>Guy</option><option>Cody</option><option>Haggar</option></select></label><button id="reset">Reset position</button><button id="pause">Pause</button></div>
-<canvas id="game" width="384" height="224" tabindex="0" aria-label="Native Final Fight combat test. Arrow keys move, Z punches, X jumps. Bred is a stationary test target."></canvas>
+<div class="toolbar"><label>Mode <select id="encounter-mode"><option value="encounter">Bred encounter</option><option value="stationary">Stationary target</option></select></label></div>
+<canvas id="game" width="384" height="224" tabindex="0" aria-label="Native Final Fight encounter. Arrow keys move, Z punches, X jumps. Bred approaches and attacks."></canvas>
 <p id="status" role="status">Loading recovered game data…</p>
 <p id="combat-status" role="status"></p>
 <div class="touch" aria-label="Touch controls"><button data-input="2" aria-label="Move left">←</button><button data-input="8" aria-label="Move up">↑</button><button data-input="4" aria-label="Move down">↓</button><button data-input="1" aria-label="Move right">→</button><button data-input="16">Punch</button><button data-input="32">Jump</button></div>
 <p class="controls">Arrows: move · Z: punch · X: jump · Gamepad supported</p>
 <p id="controller-status" role="status">No controller detected · connect one and press a button</p>
 <p class="controls">Controller: stick/D-pad move · A/Cross punch · B/Circle jump · LB/RB character · Start pause · Back/Select reset</p>
-<p class="scope">Move near Bred and press Z to test standing punches. Bred is a stationary target with recovered damage, hit-stun and fatal knockback. Reset restores him. Enemy AI, combos, grabs, weapons, props, stage progression and audio remain unfinished. Jump attacks are not implemented.</p>
+<p class="scope">Bred approaches, repositions, jabs, kicks and uppercuts using recovered behavior. Move and press Z to punch; X jumps. Reset restarts the encounter. This is one enemy on a fixed screen. Stage entry, walls, other enemies, combos, grabs, jump attacks, weapons, props, lives/respawn, progression and audio remain unfinished.</p>
 </main>
-<script type="module" src="app.js?v=4ff6cbb6d1"></script>
+<script type="module" src="app.js?v=1bb9bc2b0d"></script>
 </html>

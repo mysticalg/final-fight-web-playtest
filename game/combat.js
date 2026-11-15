@@ -42,3 +42,18 @@ export function contact(data,player,enemy) {
   player.hitStop=6;
   return true;
 }
+export function incomingContact(data,enemy,player) {
+  const image=data.images[enemy.animation.image];
+  if(!image.attackIndex)player.hitLatch=false;
+  if(player.hitLatch||player.mode==='dead')return false;
+  const dx=((enemy.x>>16)-(player.x>>16)+128)&65535;
+  const depth=word((enemy.groundY>>16)-(player.groundY>>16));
+  if(dx>256||depth < -12||depth > 9)return false;
+  const attack=resolveBoxes(enemy,image).attack;
+  const hurt=resolveBoxes(player,data.images[player.animation.image]).hurt;
+  if(!boxesOverlap(attack,hurt))return false;
+  // 007526 / 007592 uses 0079C6 (base damage, without defense adjustment).
+  player.hit(attackDamage(enemy.combat,attack),attack.reaction,enemy.facing);
+  enemy.hitStop=6;
+  return true;
+}

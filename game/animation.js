@@ -18,4 +18,9 @@ export class Animation {
     this.remaining = (this.remaining - 1) & 255;
     if (this.remaining === 0) this.set(this.entries[this.address].next);
   }
+  backward() {
+    // 003B3C: reverse walking has a separate loop marker before its first frame.
+    this.remaining=(this.remaining-1)&255;
+    if(this.remaining===0)this.set(this.entries[this.address].previous??this.address-4);
+  }
 }

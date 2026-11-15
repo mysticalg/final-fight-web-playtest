@@ -1,8 +1,9 @@
-import {Animation} from './animation.js?v=4ff6cbb6d1';
+import {Animation} from './animation.js?v=1bb9bc2b0d';
+import {receiveHit,updateReaction} from './player-reaction.js?v=1bb9bc2b0d';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
-// This slice covers free movement, jump/landing and first standing whiff.
-// Contact uses the separate combat module; grabs, combos and weapons remain open.
+// Free movement, jump/landing and first standing punch. Damage reactions and
+// contact use separate modules; grabs, combos and weapons remain open.
 export class Player {
   constructor(data, character = 0) {
     this.data = data;
@@ -17,9 +18,15 @@ export class Player {
     this.mode = 'idle';
     this.hitStop = 0;
     this.combat = this.character.combat;
+    this.health=this.character.health;
+    this.defenseIndex=this.character.defenseIndex;
+    this.invulnerable=0;
+    this.imageOffset=0;
     this.animation = new Animation(data.animationEntries, this.character.actions.idle);
   }
-  action(name) { this.animation.set(this.character.actions[name]); }
+  action(name) { this.animation.set(this.character.actions[name]); this.imageOffset=0; }
+  hit(damage,reaction,facing) { receiveHit(this,damage,reaction,facing); }
+  startReaction() { this.pendingReaction=false;this.mode='hurtPending'; }
   chooseDirection(input) {
     this.direction = this.data.directionTable[input & 15];
     const facing = this.data.facingTable[this.direction];
@@ -48,11 +55,19 @@ export class Player {
     this.x = (this.x + this.vx * 256) | 0;
   }
   update(input) {
+    this.updateState(input);
+    // 00A838 detects damage after the current state handler has run.
+    if(this.pendingReaction)this.startReaction();
+    // 00A79A: timer maintenance follows the state handler.
+    if(this.invulnerable)this.invulnerable--;
+  }
+  updateState(input) {
     const previous = this.previousInput;
     const pressed = input & ~previous;
     this.previousInput = input;
+    if(updateReaction(this,input,pressed,previous))return;
     // 00B3A4: standing attacks consume hit-stop without advancing animation.
-    if (this.hitStop && this.mode === 'punch') { this.hitStop--; return; }
+    if (this.hitStop && ['punch','punchPending'].includes(this.mode)) { this.hitStop--; return; }
     if (this.mode === 'punchPending') {
       this.mode = 'punch'; this.action('punch'); return;
     }
@@ -105,7 +120,11 @@ export class Player {
       this.vy = 0x600; this.vx = this.drag = 0;
       this.action('jumpStart'); return;
     }
-    if (pressed & 0x10) { this.mode = 'punchPending'; return; }
+    if (pressed & 0x10) {
+      // Idle advances its pose before BBFA queues the standing attack.
+      if(this.mode==='idle')this.animation.tick();
+      this.mode = 'punchPending'; return;
+    }
     if (this.direction !== 8) {
       if (this.mode !== 'walk') {
         this.mode = 'walk';

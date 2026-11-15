@@ -1,5 +1,5 @@
 # Final Fight native browser playtest
 
-Public runtime build only. Guy, Cody and Haggar can move, jump and land first standing punches on a stationary Bred target, with source-verified damage, hit-stun and fatal knockback. Enemy AI, combos, grabs, weapons, props, stage progression and audio remain unfinished.
+Public runtime build only. A recovered Bred controller approaches, repositions and uses jabs, kicks and uppercuts. Guy, Cody and Haggar can move, jump, punch, take damage, fall and recover. Stationary target mode is preserved. One enemy on a fixed screen: stage entry/collision/progression, other enemies, remaining moves, lives/respawn and audio are unfinished.
 
 No emulator or ROM archive is included. Graphics are converted runtime assets from the supplied Final Fight set; game content belongs to Capcom.

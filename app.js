@@ -1,8 +1,6 @@
-import {Player} from './game/player.js?v=4ff6cbb6d1';
-import {Presentation} from './game/presentation.js?v=4ff6cbb6d1';
-import {readGamepad} from './game/gamepad.js?v=4ff6cbb6d1';
-import {Enemy} from './game/enemy.js?v=4ff6cbb6d1';
-import {contact} from './game/combat.js?v=4ff6cbb6d1';
+import {Encounter} from './game/encounter.js?v=1bb9bc2b0d';
+import {Presentation} from './game/presentation.js?v=1bb9bc2b0d';
+import {readGamepad} from './game/gamepad.js?v=1bb9bc2b0d';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -10,9 +8,10 @@ const status = document.querySelector('#status');
 const character = document.querySelector('#character');
 const keys = new Set(), touch = new Set();
 const bindings = {ArrowRight:1, ArrowLeft:2, ArrowDown:4, ArrowUp:8, KeyZ:16, KeyX:32};
-let paused = false, player, enemy, data, presentation, hits=0;
+let paused = false, encounter, player, enemy, data, presentation;
 let gamepadState = null, gamepadInput = 0, pulseInput = 0;
 const controllerStatus = document.querySelector('#controller-status');
+const stateLabels={idle:'ready',walk:'walking',stopping:'ready',idlePending:'ready',punchPending:'punching',punch:'punching',jumpStart:'jumping',airborne:'jumping',landingPending:'landing',landing:'landing',hurtPending:'hit',hurt:'hit',knockdownInit:'knocked down',knockdown:'knocked down',hurtBounce:'knocked down',hurtSlide:'knocked down',recoverPending:'getting up',recover:'getting up',dead:'defeated',seek:'looking',choosePosition:'repositioning',approach:'approaching',runInit:'closing in',run:'closing in',attack:'attacking',waitPosition:'waiting',fallInit:'falling',fall:'falling',bounce:'falling',slide:'falling',defeated:'defeated',stationary:'stationary'};
 
 function clearInput() { keys.clear(); touch.clear(); pulseInput = 0; document.querySelectorAll('.held').forEach(button => button.classList.remove('held')); }
 window.addEventListener('blur', clearInput);
@@ -27,11 +26,13 @@ for (const button of document.querySelectorAll('[data-input]')) {
 }
 function reset() {
   if (!data) return;
-  player = new Player(data, character.selectedIndex);
-  enemy = new Enemy(data,player.x+64*65536,player.y); hits=0;
+  encounter = new Encounter(data,character.selectedIndex,{stationary:document.querySelector('#encounter-mode').value==='stationary'});
+  player=encounter.player;enemy=encounter.enemy;
+  canvas.setAttribute('aria-label',`Native Final Fight encounter. Arrow keys move, Z punches, X jumps. Bred ${encounter.stationary?'is a stationary target':'approaches and attacks'}.`);
   clearInput(); canvas.focus();
 }
 character.addEventListener('change', reset);
+document.querySelector('#encounter-mode').addEventListener('change',reset);
 document.querySelector('#reset').addEventListener('click', reset);
 function togglePause() {
   paused = !paused; clearInput(); document.querySelector('#pause').textContent = paused ? 'Resume' : 'Pause'; canvas.focus();
@@ -65,25 +66,17 @@ function input() {
 }
 function step() {
   if (paused) return;
-  player.update(input());
-  enemy.update();
-  if(contact(data,player,enemy))hits++;
+  encounter.step(input());
   pulseInput = 0;
-  // Research slice viewport. Source screen clamp: 008DD4–008E1A.
-  player.x = Math.max((data.stage.cameraX + 24) * 65536, Math.min((data.stage.cameraX + 360) * 65536, player.x));
-  // Temporary movement-test floor bounds; stage collision map is unrecovered.
-  if (!['airborne','jumpStart'].includes(player.mode)) {
-    player.y = Math.max(16 * 65536, Math.min(96 * 65536, player.y));
-    player.groundY = player.y;
-  }
 }
 function draw() {
   presentation.draw(context,player,enemy);
-  status.textContent = paused ? 'Paused' : `${player.character.name} · ${player.mode} · build ${data.version}`;
-  document.querySelector('#combat-status').textContent = `${enemy.character.name} · ${enemy.mode} · HP ${Math.max(0,enemy.health)}/${enemy.character.health} · ${hits} landed punch${hits===1?'':'es'}`;
+  status.textContent = `${player.character.name} · HP ${Math.max(0,player.health)}/${player.character.health} · ${paused?'paused':stateLabels[player.mode]} · build ${data.version}`;
+  const enemyState=enemy.mode==='neutral'?(enemy.brain?.state??'stationary'):enemy.mode;
+  document.querySelector('#combat-status').textContent = `${enemy.character.name} · ${stateLabels[enemyState]} · HP ${Math.max(0,enemy.health)}/${enemy.character.health} · ${encounter.hits} landed · ${encounter.receivedHits} received`;
 }
 try {
-  const metadata = await fetch('./assets/game.json?v=4ff6cbb6d1');
+  const metadata = await fetch('./assets/game.json?v=1bb9bc2b0d');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
   presentation = await Presentation.load(data);
