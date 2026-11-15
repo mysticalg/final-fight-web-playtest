@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Final Fight — native JavaScript</title>
-<link rel="stylesheet" href="style.css?v=a4b5092206">
+<link rel="stylesheet" href="style.css?v=b63cce8c3d">
 <main>
 <header><h1>FINAL FIGHT</h1><p>Native JavaScript</p></header>
 <div class="toolbar"><label>Character <select id="character"><option>Guy</option><option>Cody</option><option>Haggar</option></select></label><button id="reset">New game</button><button id="pause">Pause</button><button id="audio" disabled>Enable audio</button><button id="continue" hidden>Continue</button></div>
@@ -12,11 +12,11 @@
 <p id="combat-status" role="status"></p>
 <p id="audio-status" role="status">Audio off.</p>
 <div class="touch" aria-label="Touch controls"><button data-input="2" aria-label="Move left">←</button><button data-input="8" aria-label="Move up">↑</button><button data-input="4" aria-label="Move down">↓</button><button data-input="1" aria-label="Move right">→</button><button data-input="16">Punch</button><button data-input="32">Jump</button><button data-input="48">Special</button></div>
-<p class="controls">Arrows: move · Z: punch / pick up · X: jump · Down+Z in the air: downward attack · Z+X or C: special</p>
+<p class="controls">Arrows: move · Z: attack / pick up · X: jump · Down+Z in the air: downward attack · Z+X or C: special</p>
 <p id="controller-status" role="status">Connect a controller and press a button.</p>
 <p class="controls">Controller: stick/D-pad move · A/Cross punch · B/Circle jump · Start pause · Back/Select new game</p>
-<p class="scope">Play through the Slum street, room and rooftop fight with Damnd. More enemy encounters, later stages, weapons and complete audio remain in development.</p>
+<p class="scope">Play through the Slum street, room and rooftop fight with Damnd. Pick up knives, pipes and katanas with the attack button. More encounters, scenery events, section cutscenes, later stages and complete audio remain in development.</p>
 </main>
 <script>window.addEventListener('error',event=>console.error('Game startup/runtime error:',event.message||'module resource failed',event.filename||''));</script>
-<script type="module" src="app.js?v=a4b5092206" onerror="document.querySelector('#status').textContent='Game code could not load. Reload the page to retry.'"></script>
+<script type="module" src="app.js?v=b63cce8c3d" onerror="document.querySelector('#status').textContent='Game code could not load. Reload the page to retry.'"></script>
 </html>

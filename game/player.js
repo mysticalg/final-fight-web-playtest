@@ -1,7 +1,8 @@
-import {Animation} from './animation.js?v=a4b5092206';
-import {receiveHit,updateReaction} from './player-reaction.js?v=a4b5092206';
-import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=a4b5092206';
-import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=a4b5092206';
+import {Animation} from './animation.js?v=b63cce8c3d';
+import {receiveHit,updateReaction} from './player-reaction.js?v=b63cce8c3d';
+import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=b63cce8c3d';
+import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=b63cce8c3d';
+import{updateWeapon,dropWeapon}from'./player-weapons.js?v=b63cce8c3d';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
 // Movement, jump/landing and standing attacks. Contact, grabs and damage
@@ -40,7 +41,7 @@ export class Player {
     if(response>0&&this.characterIndex===0&&this.stageIndex!==6&&this.rememberedJump&&this.vx&&((this.vx<0)===!!this.facing))this.mode='wallClingPending';
   }
   hit(damage,reaction,facing) { receiveHit(this,damage,reaction,facing); }
-  startReaction() { this.pendingReaction=false;this.mode='hurtPending';this.comboCounter=0;this.comboWindow=0;this.attackActive=false; }
+  startReaction() { dropWeapon(this);this.pendingReaction=false;this.mode='hurtPending';this.comboCounter=0;this.comboWindow=0;this.attackActive=false; }
   chooseDirection(input) {
     this.direction = this.data.directionTable[input & 15];
     const facing = this.data.facingTable[this.direction];
@@ -88,6 +89,7 @@ export class Player {
     this.previousInput = input;
     if(updateSpecial(this))return;
     if(updateReaction(this,input,pressed,previous))return;
+    if(updateWeapon(this))return;
     if(this.mode==='respawnFall'){
       this.integrateJump();this.collision?.resolveAir(this,16);
       if((this.y>>16)<=(this.groundY>>16)){this.y=this.groundY;this.mode='landingPending';}

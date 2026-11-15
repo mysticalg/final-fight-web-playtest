@@ -1,6 +1,6 @@
-import{Enemy}from'./enemy.js?v=a4b5092206';
-import{KnifeBrain}from'./knife-brain.js?v=a4b5092206';
-import{throwHealth}from'./grabs.js?v=a4b5092206';
+import{Enemy}from'./enemy.js?v=b63cce8c3d';
+import{KnifeBrain}from'./knife-brain.js?v=b63cce8c3d';
+import{throwHealth}from'./grabs.js?v=b63cce8c3d';
 const word=n=>n<<16>>16;
 export class KnifeEnemy extends Enemy{
  constructor(data,{variant=8,x,y,level=0,direction=0,parameter=0}={}){
@@ -10,7 +10,7 @@ export class KnifeEnemy extends Enemy{
  }
  startReaction(){
   this.pendingReaction=false;this.mode=this.health<0?'knifeDeath':'knifeHurtInit';this.damagePhase=0;
-  if(this.weapon){this.weapon.holder=null;this.weapon.dropped=true;this.weapon=null;}
+  if(this.weapon){this.weapon.hitFrom=this.hitFrom;this.weapon.dropped=true;this.weapon=null;}
  }
  restore(){this.mode='neutral';if(this.brain)this.brain.seek();else this.action('neutral');this.imageOffset=0;}
  releaseHeld(){this.mode='knifeReleased';this.releasePhase=((this.y>>16)&255)<=((this.groundY>>>24)&255)?4:0;this.wait=30;}

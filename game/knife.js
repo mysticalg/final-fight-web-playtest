@@ -1,5 +1,5 @@
-import{Animation}from'./animation.js?v=a4b5092206';
-import{resolveBoxes,boxesOverlap}from'./combat.js?v=a4b5092206';
+import{Animation}from'./animation.js?v=b63cce8c3d';
+import{resolveBoxes,boxesOverlap}from'./combat.js?v=b63cce8c3d';
 const word=n=>n<<16>>16;
 export class Knife{
  constructor(data,holder){
@@ -8,6 +8,9 @@ export class Knife{
   this.animation=new Animation(data.animationEntries,this.character.actions.idle);
  }
  action(name){this.animation.set(this.character.actions[name]);}
+ targets(world,player){return player?[player]:[];}
+ damage(){return this.character.damage[this.owner.character.sourceCharacterId][this.owner.level??0];}
+ projectileHit(){}
  update(world,player){
   if(this.removed)return;
   if(this.mode==='spent'){this.removed=true;this.drawn=false;return;}
@@ -26,8 +29,8 @@ export class Knife{
    const blocked=world.collision?.resolve(this)??0;
    if(blocked===4){this.mode='spent';return;}
    if(blocked>0){this.facing^=1;this.mode='dropInit';this.onSound?.(15);return;}
-   if((world.frame&1)&&player&&player.mode!=='dead'&&Math.abs(word((this.groundY>>16)-(player.groundY>>16)))<=9&&boxesOverlap(this.lastAttack,resolveBoxes(player,this.data.images[player.animation.image]).hurt)){
-    player.hit(this.character.damage[this.owner.character.sourceCharacterId][this.owner.level??0],3,this.facing);player.hitAttacker=this;this.onSound?.(16);this.mode='spent';return;
+   if(world.frame&1)for(const target of this.targets(world,player))if(target.mode!=='dead'&&Math.abs(word((this.groundY>>16)-(target.groundY>>16)))<=9&&boxesOverlap(this.lastAttack,resolveBoxes(target,this.data.images[target.animation.image]).hurt)){
+    target.hit(this.damage(),3,this.facing,{unblockable:true,guardContact:true});target.hitAttacker=this;this.projectileHit(world,target);this.onSound?.(16);this.mode='spent';return;
    }
    this.animation.tick();
    this.lastAttack=resolveBoxes(this,this.data.images[this.animation.image]).attack;

@@ -1,7 +1,7 @@
-import {StreetWorld} from './game/street-world.js?v=a4b5092206';
-import {Presentation} from './game/presentation.js?v=a4b5092206';
-import {readGamepad} from './game/gamepad.js?v=a4b5092206';
-import {GameAudio} from './game/audio.js?v=a4b5092206';
+import {StreetWorld} from './game/street-world.js?v=b63cce8c3d';
+import {Presentation} from './game/presentation.js?v=b63cce8c3d';
+import {readGamepad} from './game/gamepad.js?v=b63cce8c3d';
+import {GameAudio} from './game/audio.js?v=b63cce8c3d';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -87,13 +87,13 @@ function step() {
 }
 function draw() {
   presentation.draw(context,player,encounter.actors,encounter.view);
-  status.textContent = `${player.character.name} · HP ${Math.max(0,player.health)}/${player.character.health} · ${encounter.lives} lives${paused?' · paused':''}`;
+  status.textContent = `${player.character.name} · HP ${Math.max(0,player.health)}/${player.character.health} · ${encounter.lives} lives${player.weapon?' · '+player.weapon.character.name:''}${paused?' · paused':''}`;
   document.querySelector('#combat-status').textContent=encounter.gameOver?'GAME OVER':encounter.sectionIndex===2&&encounter.cleared?'SLUM CLEAR':`SLUM · ${['STREET','ROOM','ROOFTOP'][encounter.sectionIndex]}${encounter.cleared?' · GO →':''}${enemy?' · '+enemy.character.name+' '+Math.max(0,enemy.health)+'/'+(enemy.maxHealth??enemy.character.health):''}`;
   document.querySelector('#continue').hidden=!encounter.gameOver;
 
 }
 try {
-  const metadata = await fetch('./assets/game.json?v=a4b5092206');
+  const metadata = await fetch('./assets/game.json?v=b63cce8c3d');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
   audio=new GameAudio(data.audio,{onState:state=>{

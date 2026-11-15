@@ -59,8 +59,10 @@ export class KnifeBrain{
   if(this.phase===0){
    if(!this.step){
     this.step=2;this.wait=10;const weapons=world.knifeWeapons??=[];
-    if(weapons.filter(w=>!w.removed).length<6){a.weapon=world.createKnife?.(a)??{holder:a};weapons.push(a.weapon);a.action('knifeThrow');}
-    else{this.state=this.phase=0;}
+    if(weapons.filter(w=>!w.removed).length<6){
+     a.weapon=world.createKnife?world.createKnife(a):{holder:a};
+     if(a.weapon){weapons.push(a.weapon);a.action('knifeThrow');}else this.state=this.phase=0;
+    }else{this.state=this.phase=0;}
    }else if(!--this.wait){this.state=this.phase=0;}
    return;
   }

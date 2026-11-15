@@ -1,7 +1,7 @@
-import{BredBrain}from'./bred-brain.js?v=a4b5092206';
-import{advanceApproach,reachedPosition,faceTarget}from'./enemy-ai.js?v=a4b5092206';
-import{AxlBrain}from'./axl-brain.js?v=a4b5092206';
-import{KnifeBrain}from'./knife-brain.js?v=a4b5092206';
+import{BredBrain}from'./bred-brain.js?v=b63cce8c3d';
+import{advanceApproach,reachedPosition,faceTarget}from'./enemy-ai.js?v=b63cce8c3d';
+import{AxlBrain}from'./axl-brain.js?v=b63cce8c3d';
+import{KnifeBrain}from'./knife-brain.js?v=b63cce8c3d';
 export function createEnemyBrain(actor){return actor.character.family===5?new KnifeBrain(actor):actor.character.family===2?new AxlBrain(actor):actor.character.family===1?new JBrain(actor):new BredBrain(actor);}
 
 // J/Two.P single-target controller (02832C–028F2E). Their locomotion speed

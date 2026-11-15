@@ -2,6 +2,7 @@
 // continuation window; BA3A freezes that window while an attack is active.
 export function queueStanding(player,input=0) {
   if(!player.suppressComboThrow&&player.tryPickup?.()){player.mode='pickup';player.attackActive=false;player.action('pickup');return;}
+  if(!player.suppressComboThrow&&queueWeapon(player))return;
   player.comboCounter=player.comboWindow?(player.comboCounter+2)&65535:0;
   player.comboWindow=0;
   if(player.comboCounter>2*(player.character.combo.length-1))player.comboCounter=0;
@@ -45,3 +46,4 @@ export function airAttack(player,input,pressed,{wall=false}={}) {
   player.airAttackUsed=true;player.action(player.vx?(wall?'wallAir':'airForward'):'airStanding');
   player.sound([5,27,8][player.characterIndex]);
 }
+import{queueWeapon}from'./player-weapons.js?v=b63cce8c3d';
