@@ -1,19 +1,21 @@
-import {Player} from './player.js?v=effc370320';
-import {Enemy} from './enemy.js?v=effc370320';
-import {BredBrain} from './bred-brain.js?v=effc370320';
-import {GameRandom} from './enemy-ai.js?v=effc370320';
-import {contact,incomingContact,canGrab,canComboThrow} from './combat.js?v=effc370320';
-import {GrabPair} from './grabs.js?v=effc370320';
+import {Player} from './player.js?v=127ac3e7c0';
+import {Enemy} from './enemy.js?v=127ac3e7c0';
+import {BredBrain} from './bred-brain.js?v=127ac3e7c0';
+import {GameRandom} from './enemy-ai.js?v=127ac3e7c0';
+import {contact,incomingContact,canGrab,canComboThrow} from './combat.js?v=127ac3e7c0';
+import {GrabPair} from './grabs.js?v=127ac3e7c0';
+import{CollisionGrid}from'./collision.js?v=127ac3e7c0';
 
 // Bounded single-enemy encounter. Stage entry, collision maps and spawn waves
 // remain separate recovery work; the stationary combat test is still available.
 export class Encounter {
-  constructor(data,character=0,{stationary=false,bounds=true,enemyVariant=0}={}) {
+  constructor(data,character=0,{stationary=false,bounds=true,enemyVariant=0,collision=false}={}) {
     this.data=data;this.player=new Player(data,character);
     this.enemy=new Enemy(data,this.player.x+(stationary?64:104)*65536,this.player.y,stationary?1:0,enemyVariant);
     this.stationary=stationary;this.bounds=bounds;this.hits=0;this.receivedHits=0;
     this.sounds=[];this.player.onSound=this.enemy.onSound=command=>this.sounds.push(command);
     this.world={frame:0,random:new GameRandom(0),activeAttackers:0,difficulty:4,slots:data.enemyPositionSlots};
+    if(collision&&data.collision){this.world.collision=new CollisionGrid(data.collision,data.stage.cameraX);this.player.collision=this.world.collision;}
     this.player.worldRandom=this.world.random;
     this.player.comboThrow=()=>{
       if(this.grab?.held||this.grab?.holding||!canComboThrow(this.data,this.player,this.enemy))return false;

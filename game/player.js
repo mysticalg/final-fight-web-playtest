@@ -1,7 +1,7 @@
-import {Animation} from './animation.js?v=effc370320';
-import {receiveHit,updateReaction} from './player-reaction.js?v=effc370320';
-import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=effc370320';
-import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=effc370320';
+import {Animation} from './animation.js?v=127ac3e7c0';
+import {receiveHit,updateReaction} from './player-reaction.js?v=127ac3e7c0';
+import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=127ac3e7c0';
+import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=127ac3e7c0';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
 // Movement, jump/landing and standing attacks. Contact, grabs and damage
@@ -30,7 +30,15 @@ export class Player {
   }
   action(name) { this.animation.set(this.character.actions[name]); this.imageOffset=0; }
   sound(command) { if(command!==null&&command!==undefined)this.onSound?.(command); }
-  groundCollision() { this.collision?.resolveWide(this,16); }
+  groundCollision() {
+    if(this.collision?.resolveWide(this,16)<0){this.mode='freefallPending';this.attackActive=false;return true;}
+    return false;
+  }
+  airCollision(pressed) {
+    if(pressed&32)this.rememberedJump=true;
+    const response=this.collision?.resolveAir(this,16,this.collisionHeight??64);
+    if(response>0&&this.characterIndex===0&&this.stageIndex!==6&&this.rememberedJump&&this.vx&&((this.vx<0)===!!this.facing))this.mode='wallClingPending';
+  }
   hit(damage,reaction,facing) { receiveHit(this,damage,reaction,facing); }
   startReaction() { this.pendingReaction=false;this.mode='hurtPending';this.comboCounter=0;this.comboWindow=0;this.attackActive=false; }
   chooseDirection(input) {
@@ -55,7 +63,7 @@ export class Player {
   }
   integrateJump() {
     // 003070–003098: acceleration precedes position integration.
-    this.vy = (this.vy - 0x48) << 16 >> 16;
+    this.vy = (this.vy - (this.gravity??0x48)) << 16 >> 16;
     this.vx = (this.vx - this.drag) << 16 >> 16;
     this.y = (this.y + this.vy * 256) | 0;
     this.x = (this.x + this.vx * 256) | 0;
@@ -88,11 +96,11 @@ export class Player {
     }
     if(this.mode==='postThrow') {
       this.animation.tick();if(this.animation.flags&128)this.mode='idlePending';
-      this.groundCollision();
+      if(this.groundCollision())return;
       if(pressed&32)this.mode='jumpPending';if(pressed&16)queueStanding(this,input);return;
     }
     // 00B3A4: standing attacks consume hit-stop without advancing animation.
-    if (this.hitStop && ['punch','punchPending','airborne'].includes(this.mode)) { this.hitStop--; return; }
+    if (this.hitStop && ['punch','punchPending','airborne','wallAir'].includes(this.mode)) { this.hitStop--; return; }
     if (['punchPending','punch'].includes(this.mode)) {
       standingUpdate(this,input,pressed);
       this.groundCollision();
@@ -100,7 +108,7 @@ export class Player {
     }
     if(this.mode==='jumpPending') {
       this.mode='jumpStart';this.groundY=this.y;this.airAttackUsed=this.airDownUsed=false;
-      this.vy=0x600;this.vx=this.drag=0;this.action('jumpStart');return;
+      this.vy=0x600;this.vx=this.drag=0;this.gravity=0x48;this.rememberedJump=false;this.action('jumpStart');return;
     }
     if (this.mode === 'jumpStart') {
       // 00ABB4–00AC2E: hold pose until flagged or a new directional input.
@@ -120,11 +128,34 @@ export class Player {
     }
     if (this.mode === 'airborne') {
       this.integrateJump();
+      this.airCollision(pressed);
       if ((this.y >> 16) <= (this.groundY >> 16)) {
         this.y = this.groundY;
         this.mode = 'landingPending';
       } else { airAttack(this,input,pressed);this.animation.tick(); }
       return;
+    }
+    if(this.mode==='freefallPending'){
+      this.mode='freefall';this.vy=this.vx=this.drag=0;this.gravity=0x48;this.action('freefall');return;
+    }
+    if(this.mode==='freefall'){
+      this.integrateJump();if((this.y>>16)<=(this.groundY>>16)){this.y=this.groundY;this.mode='landingPending';}this.animation.tick();return;
+    }
+    if(this.mode==='wallClingPending'){
+      this.mode='wallCling';this.airAttackUsed=this.airDownUsed=false;this.wallTimer=9;this.action('wallCling');
+    }
+    if(this.mode==='wallCling'){
+      if(!(input&32)||(input&4)){this.mode='freefallPending';return;}
+      airAttack(this,input,pressed,{wall:true});
+      if(!this.airAttackUsed&&!this.airDownUsed){this.animation.tick();if(--this.wallTimer)return;this.action('jumpForward');}
+      this.mode='wallAir';this.rememberedJump=false;this.facing^=1;
+      const strong=!!(input&(this.facing?2:1)),sign=this.facing?-1:1;
+      this.vx=(strong?0x680:0x480)*sign;this.drag=(strong?0x10:0)*sign;this.vy=strong?0x380:0x300;this.gravity=strong?0x58:0x38;return;
+    }
+    if(this.mode==='wallAir'){
+      this.integrateJump();this.airCollision(pressed);
+      if((this.y>>16)<=(this.groundY>>16)){this.y=this.groundY;this.mode='landingPending';}
+      else{airAttack(this,input,pressed,{wall:true});this.animation.tick();}return;
     }
     if (this.mode === 'landingPending') {
       this.mode = 'landing'; this.action('landing'); return;
@@ -135,7 +166,7 @@ export class Player {
       this.animation.tick();
       if (input & 3) this.chooseDirection(input);
       if (((input & 3) && this.direction !== 8) || (this.animation.flags & 128)) this.mode = 'idlePending';
-      this.groundCollision();
+      if(this.groundCollision())return;
       if(pressed&32)this.mode='jumpPending';
       if(pressed&16)queueStanding(this,input);
       return;
@@ -155,7 +186,7 @@ export class Player {
     } else {
       this.animation.tick();this.chooseDirection(input);if(this.direction!==8)this.mode='walkPending';
     }
-    this.groundCollision();
+    if(this.groundCollision())return;
     if(pressed&32)this.mode='jumpPending';
     if(pressed&16)queueStanding(this,input);
   }

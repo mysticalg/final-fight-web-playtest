@@ -30,17 +30,17 @@ export function standingUpdate(player,input,pressed) {
 
 // BB52: one ordinary and one downward attack per jump. A backward-moving
 // ordinary kick is rejected; downward attacks have a separate backward root.
-export function airAttack(player,input,pressed) {
+export function airAttack(player,input,pressed,{wall=false}={}) {
   if(!(pressed&16))return;
   if(input&4) {
     if(player.airDownUsed)return;
     player.airDownUsed=true;
     if(player.characterIndex===2)player.sound(10);
     const backwards=player.vx&&((player.vx<0)!==!!player.facing);
-    player.action(backwards?'airDownBackward':'airDown');return;
+    player.action(wall?'wallDown':backwards?'airDownBackward':'airDown');return;
   }
   if(player.vx&&((player.vx<0)!==!!player.facing))return;
   if(player.airAttackUsed)return;
-  player.airAttackUsed=true;player.action(player.vx?'airForward':'airStanding');
+  player.airAttackUsed=true;player.action(player.vx?(wall?'wallAir':'airForward'):'airStanding');
   player.sound([5,27,8][player.characterIndex]);
 }

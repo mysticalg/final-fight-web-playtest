@@ -23,6 +23,21 @@ export function tileResponse(kind,x,y,curves){
 }
 
 export function gridIndex(x,y){const row=(~y>>4)&63,col=(x>>4)&63;return(row&15)+(col<<4)+((row&48)<<6);}
+// 0082BC–008432: collision while standing on a static raised surface.
+export function raisedTileResponse(kind,x,y){
+  let dx=0,dy=0,response=-1;const lx=x&15,ly=y&15;
+  if(kind===3){dx=-lx-1;response=1;}
+  else if(kind===5){dx=16-lx;response=1;}
+  else if(kind===20)response=0;
+  else if(kind===21||kind===22)response=1;
+  else if(kind===23||kind===24){
+    const height=kind===23?(ly<8?-1:30-2*ly):(ly<8?14-2*ly:0);
+    if(height>=0){const push=16-height-lx;if(push>0){dx=push;response=0;}}
+  }else if(kind===31){if(ly){dy=16-ly;response=1;}else response=0;}
+  else if(kind===32){dy=-ly-1;response=1;}
+  else if(kind>38)throw new Error(`Unrecovered raised collision tile ${kind}`);
+  return{kind,dx,dy,response};
+}
 export class CollisionGrid{
   constructor(data,cameraX=0){this.data=data;this.cameraX=cameraX;}
   lookup(x,y){return this.data.tiles[gridIndex(x,y)];}
@@ -37,9 +52,14 @@ export class CollisionGrid{
     return tileResponse(this.lookup(x,y),x,y,this.data.curves);
   }
   resolve(actor,offset=0){
-    const first=this.probe(word((actor.x>>16)+offset),actor.groundY>>16);
+    const response=this.resolveWith(actor,offset,(x,y)=>actor.floorOffset?raisedTileResponse(this.lookup(x,y),x,y):this.probe(x,y));
+    if(response<0&&!offset){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}
+    return response;
+  }
+  resolveWith(actor,offset,probe){
+    const first=probe(word((actor.x>>16)+offset),actor.groundY>>16);
     actor.collisionType=first.response;actor.collisionTile=first.kind;
-    if(!first.response)return first.response;
+    if(first.response<=0)return first.response;
     const oldX=actor.x>>16;actor.x=(actor.x+first.dx*65536)|0;
     let crossed=((oldX^(actor.x>>16))&16)!==0;
     if(!crossed){
@@ -48,8 +68,8 @@ export class CollisionGrid{
       crossed=((oldY^(actor.groundY>>16))&16)!==0;
     }
     if(crossed){
-      const next=this.probe(word((actor.x>>16)+offset),actor.groundY>>16);
-      if(next.response){
+      const next=probe(word((actor.x>>16)+offset),actor.groundY>>16);
+      if(next.response!==0){
         actor.collisionType=next.response;actor.collisionTile=next.kind;
         actor.x=(actor.x+next.dx*65536)|0;actor.y=(actor.y+next.dy*65536)|0;actor.groundY=(actor.groundY+next.dy*65536)|0;
       }
@@ -64,6 +84,23 @@ export class CollisionGrid{
     if(widePriority[((actor.collisionType+1)<<3)+(firstType+1)]){
       actor.collisionType=firstType;actor.collisionTile=firstTile;
     }
+    if(actor.collisionType<0){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}
+    return actor.collisionType;
+  }
+  resolveAir(actor,width=16,height=64){
+    const offset=actor.vx<0?-width:width,raised=!!actor.floorOffset;
+    const probe=(x,y)=>{
+      const result=actor.floorOffset?raisedTileResponse(this.lookup(x,y),x,y):tileResponse(this.lookup(x,y),x,y,this.data.curves);
+      if(result.response>=2){
+        if(((y+height)&65535)<=((actor.y>>16)&65535)){
+          actor.floorOffset=height;actor.groundY=(actor.groundY+height*65536)|0;result.response=0;
+        }else result.response=1;
+      }
+      return result;
+    };
+    const first=this.resolveWith(actor,offset,probe);
+    if(raised&&first<=0){const second=this.resolveWith(actor,-offset,probe);if((first&second)<0){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}}
+    else if(!raised&&first<0){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}
     return actor.collisionType;
   }
 }
