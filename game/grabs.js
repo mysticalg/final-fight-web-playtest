@@ -1,4 +1,4 @@
-import {escapePressed,queueEscape} from './player-specials.js?v=683f011c56';
+import {escapePressed,queueEscape} from './player-specials.js?v=3eb60d19d2';
 // Shared grab helpers: 004180, 00D87A, 003F40, 00D972 and 00D99E.
 const word=value=>value<<16>>16;
 const offsetWord=(position,offset)=>((word((position>>16)+offset)<<16)|(position&65535))|0;
@@ -165,6 +165,7 @@ export class GrabPair {
   updateHeld() {
     const v=this.victim;
     if(!this.held)return false;
+    if(v.character.family===2)v.guardReady=false;
     if(this.victimQueued){
       this.victimQueued=false;
       if(this.cancelBeforeVictim){this.held=false;v.mode=this.victimMode;return false;}

@@ -45,7 +45,7 @@ export function contact(data,player,enemy,{queued=false}={}) {
   // 007330: latch, damage, orientation and six-frame attacker/victim hit-stop.
   let hitFrom=special?(((player.x>>16)&65535)>((enemy.x>>16)&65535)?1:0):player.facing;
   if(enemy.isProp&&!special&&player.characterIndex===2&&image.attackIndex===14)hitFrom^=1;
-  enemy.hit(attackDamage(player.combat,attack,enemy.defenseIndex),attack.reaction,hitFrom,{unblockable:attack.unblockable});
+  enemy.hit(attackDamage(player.combat,attack,enemy.defenseIndex),attack.reaction,hitFrom,{unblockable:attack.unblockable,guardContact:true});
   if(enemy.isProp){enemy.owner=player.playerIndex??0;player.sound?.(enemy.subtype===8?22:[4,6].includes(enemy.subtype)?23:24);player.hitStop=6;if(enemy.subtype!==1||enemy.appearance<2){player.comboWindow=45;player.escapeHit=true;}return true;}
   if(!(enemy.character.family===2&&enemy.guardReady))player.sound?.(attack.sound);
   player.hitStop=6;

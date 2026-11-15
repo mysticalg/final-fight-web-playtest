@@ -1,6 +1,6 @@
-import{Enemy}from'./enemy.js?v=683f011c56';
-import{createEnemyBrain}from'./j-brain.js?v=683f011c56';
-import{faceTarget}from'./enemy-ai.js?v=683f011c56';
+import{Enemy}from'./enemy.js?v=3eb60d19d2';
+import{createEnemyBrain}from'./j-brain.js?v=3eb60d19d2';
+import{faceTarget}from'./enemy-ai.js?v=3eb60d19d2';
 const word=n=>n<<16>>16;
 
 // Original family 0/1 initialization and ordinary parameter 0–3 entry waits.
@@ -19,8 +19,9 @@ export class StageEnemy extends Enemy{
     const root=this.character.poseActions?.[name]?.[this.pose??0];
     if(root!==undefined){this.animation.set(root);this.imageOffset=0;}else super.action(name);
   }
-  hit(damage,reaction,facing,{unblockable=false}={}){
+  hit(damage,reaction,facing,{unblockable=false,guardContact=false}={}){
     if(this.character.family!==2)return super.hit(damage,reaction,facing);
+    if(!guardContact){this.guardReady=false;return super.hit(damage,reaction,facing);}
     this.guardContact=true;this.hitFrom=facing;this.hitStop=6;this.hitLatch=true;
     if(unblockable||reaction===7)this.guardReady=false;
     if(!this.guardReady)super.hit(damage,reaction,facing);
