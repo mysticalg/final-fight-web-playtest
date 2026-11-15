@@ -1,4 +1,4 @@
-import {escapePressed,queueEscape} from './player-specials.js?v=95334e3459';
+import {escapePressed,queueEscape} from './player-specials.js?v=e8d37198c6';
 // Shared grab helpers: 004180, 00D87A, 003F40, 00D972 and 00D99E.
 const word=value=>value<<16>>16;
 const offsetWord=(position,offset)=>((word((position>>16)+offset)<<16)|(position&65535))|0;
@@ -179,13 +179,15 @@ export class GrabPair {
     else {this.held=false;v.mode=(v.y>>16)>(v.groundY>>16)?'releasedFallPending':'releasedPending';}
     if(v.pendingReaction) {
       v.pendingReaction=false;
-      if(v.health<0||v.reaction>=3){this.held=false;if(v.reaction===5||v.reaction===6)v.y=v.groundY;v.startReaction();}
+if(v.health<0||v.reaction>=3){this.held=false;if((v.reaction===5||v.reaction===6)&&!v.slamKeepsHeight)v.y=v.groundY;v.startReaction();}
     }
+    if(v.releaseHeld&&['releasedPending','releasedFallPending'].includes(v.mode))v.releaseHeld();
     return true;
   }
   cancelHolder() {this.holding=false;this.cancelBeforeVictim=this.victimQueued;}
   updateThrown(world) {
     const v=this.victim;
+    if(v.updateThrown)return v.updateThrown(world,this.holder);
     if(v.mode==='thrownPending') {
       v.mode='thrown';v.vy=0x400;v.vx=0x400*(v.direction?-1:1);
       v.animation.set(v.character.actions.thrown??this.rules.enemyThrown);v.imageOffset=0;return true;

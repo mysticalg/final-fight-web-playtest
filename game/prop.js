@@ -1,4 +1,4 @@
-import{Animation}from'./animation.js?v=95334e3459';
+import{Animation}from'./animation.js?v=e8d37198c6';
 const word=value=>value<<16>>16;
 export function containerDrop(data,prop,random,pressedInput=0){
   let item=prop.parameter??255;
@@ -42,8 +42,10 @@ export class Prop{
     if(this.mode==='breakPending'){
       this.mode='breaking';this.breakStep=[4,8].includes(this.subtype)?'stationary':'flight';this.breakTimer=this.subtype===5?70:50;
       this.vx=([1,6].includes(this.subtype)?0x400:0x600)*(this.direction?-1:1);this.vy=[1,6].includes(this.subtype)?0x300:0x800;this.collisionWait=0;
+      if(this.subtype===7){this.vx=0x300*(this.direction?-1:1);this.vy=0x480;}
       this.animation.set(this.character.actions.broken);
       if([4,6,8].includes(this.subtype)){const phase=world.random.next()&3;world.spawnDebris?.(this,phase);if(this.owner<0)this.sound(this.subtype===8?22:23);else world.awardScore?.(this.subtype===8?21:this.subtype===4?7:18,this.owner);}
+      else if(this.subtype===7){world.spawnDebris?.(this,null);if(this.owner<0)this.sound(24);else world.awardScore?.(18,this.owner);}
       else if(this.subtype===5){if(this.owner<0)this.sound(24);else world.awardScore?.(16,this.owner);}
       else if(!this.appearance&&this.owner>=0)world.awardScore?.(33,this.owner);
       if(this.subtype!==1||this.appearance<2){const drop=containerDrop(this.data,this,world.random,world.pressedInput??0);if(drop)world.dropItem?.(drop,this);}
@@ -51,8 +53,8 @@ export class Prop{
       if(this.collisionWait)this.collisionWait--;
       else{
         this.integrate();
-        if(world.collision?.resolveCenterAir(this)>0){this.vx=0;this.collisionWait=5;if(this.vy>=0)this.vy=0;}
-        if((this.y>>16)<=(this.groundY>>16)){this.y=this.groundY;this.breakStep='bounce';this.vx=0x100*(this.direction?-1:1);this.vy=0x400;}
+        if(world.collision?.resolveCenterAir(this)>0){this.vx=this.subtype===7?-this.vx:0;this.collisionWait=5;if(this.vy>=0)this.vy=0;}
+        if((this.y>>16)<=(this.groundY>>16)){this.y=this.groundY;this.breakStep='bounce';this.vx=0x100*(this.direction?-1:1);this.vy=this.subtype===7?0x200:0x400;}
       }
     }else if(this.breakStep==='bounce'){
       this.integrate();if(world.collision?.resolveCenterAir(this)>0){this.vx=0;if(this.subtype===1)this.drag=0;}

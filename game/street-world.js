@@ -1,16 +1,17 @@
-import{MultiEncounter}from'./multi-encounter.js?v=95334e3459';
-import{StageEnemy}from'./stage-enemy.js?v=95334e3459';
-import{Prop}from'./prop.js?v=95334e3459';
-import{Pickup,collectPickup}from'./pickup.js?v=95334e3459';
-import{StageCollision}from'./stage-collision.js?v=95334e3459';
-import{StageBoundary}from'./stage-boundaries.js?v=95334e3459';
-import{StageSpawns}from'./stage-spawns.js?v=95334e3459';
-import{ActorPool,EnemyLimits}from'./stage-pools.js?v=95334e3459';
-import{advanceCamera,advanceParallax}from'./stage-camera.js?v=95334e3459';
-import{updatePositionSlots}from'./position-slots.js?v=95334e3459';
-import{contact,incomingContact,canGrab}from'./combat.js?v=95334e3459';
-import{GrabPair}from'./grabs.js?v=95334e3459';
-import{Player}from'./player.js?v=95334e3459';
+import{MultiEncounter}from'./multi-encounter.js?v=e8d37198c6';
+import{StageEnemy}from'./stage-enemy.js?v=e8d37198c6';
+import{Prop}from'./prop.js?v=e8d37198c6';
+import{Pickup,collectPickup}from'./pickup.js?v=e8d37198c6';
+import{StageCollision}from'./stage-collision.js?v=e8d37198c6';
+import{StageBoundary}from'./stage-boundaries.js?v=e8d37198c6';
+import{StageSpawns}from'./stage-spawns.js?v=e8d37198c6';
+import{ActorPool,EnemyLimits}from'./stage-pools.js?v=e8d37198c6';
+import{advanceCamera,advanceParallax}from'./stage-camera.js?v=e8d37198c6';
+import{updatePositionSlots}from'./position-slots.js?v=e8d37198c6';
+import{contact,incomingContact,canGrab}from'./combat.js?v=e8d37198c6';
+import{GrabPair}from'./grabs.js?v=e8d37198c6';
+import{Player}from'./player.js?v=e8d37198c6';
+import{Damnd}from'./damnd.js?v=e8d37198c6';
 
 // Continuous Slum gameplay. Original spawn schedules feed the same actor pools
 // as the player walks between areas; cutscene effects remain separate work.
@@ -21,7 +22,7 @@ export class StreetWorld extends MultiEncounter{
     this.camera={...section.camera2,x:section.camera2.x*65536,y:section.camera2.y*65536};
     this.parallax={...section.camera3,x:section.camera3.x*65536,y:section.camera3.y*65536};
     this.enemyPool=new ActorPool(13);this.propPool=new ActorPool(16);this.pickupPool=new ActorPool(10);this.limits=new EnemyLimits(scene.limits);
-    this.scoreEvents=[];this.collected=0;this.effectEvents=[];this.windowWaves=[];this.spawns=new StageSpawns(scene.schedules.alternate[0][0]);
+    this.bosses=[];this.scoreEvents=[];this.collected=0;this.effectEvents=[];this.windowWaves=[];this.spawns=new StageSpawns(scene.schedules.alternate[0][0]);
     this.difficultyTicks=0;this.lives=3;this.gameOver=false;this.pendingWeapons=[];
     const world=this.world;world.cameraX=this.camera.x>>16;world.cameraY=this.camera.y>>16;world.occupiedSlots=Array(8).fill(0);
     world.collision=new StageCollision(data.collision,layout,scene.layouts.blocks,world.cameraX);this.player.collision=world.collision;
@@ -31,6 +32,7 @@ export class StreetWorld extends MultiEncounter{
       const item=new Pickup(data,event);item.onSound=command=>this.sounds.push(command);this.pickupPool.allocate(item);
     };
     world.spawnDebris=(owner,phase)=>this.effectEvents.push({owner,phase});
+    world.stopSpawns=()=>world.spawnDisabled=true;world.stageCleared=()=>this.stageCleared=true;
     this.player.tryPickup=()=>{const item=collectPickup(this.player,this.pickupPool.slots.filter(Boolean),world.awardScore);if(item)this.collected++;return item;};
     this.boundaries=(section.boundaries??[]).map(b=>new StageBoundary(b));
     // The controlled comparison starts after camera initialization.
@@ -41,13 +43,13 @@ export class StreetWorld extends MultiEncounter{
   get props(){return this.propPool.slots.filter(Boolean);}
   get items(){return this.pickupPool.slots.filter(Boolean);}
   get actors(){return[...this.enemies,...this.props,...this.items];}
-  refreshActors(){this.enemies=this.enemyPool.slots.filter(Boolean);this.enemy=this.enemies[0];this.world.collision.obstacles=this.props;}
+  refreshActors(){this.enemies=[...this.enemyPool.slots.filter(Boolean),...this.bosses];this.enemy=this.enemies.find(e=>!e.defeated);this.world.collision.obstacles=this.props;}
   enterSection(sectionIndex){
     const scene=this.scene,layout=scene.layouts.stages[this.stageIndex],section=layout.sections[sectionIndex],w=this.world;
     this.sectionIndex=sectionIndex;this.camera={...section.camera2,x:section.camera2.x*65536,y:section.camera2.y*65536};
     this.parallax={...section.camera3,x:section.camera3.x*65536,y:section.camera3.y*65536};
     this.enemyPool=new ActorPool(13);this.propPool=new ActorPool(16);this.pickupPool=new ActorPool(10);this.limits=new EnemyLimits(scene.limits);
-    this.windowWaves=[];this.spawns=new StageSpawns(scene.schedules.alternate[this.stageIndex][sectionIndex]);this.grab=null;this.cleared=false;
+    this.bosses=[];this.stageCleared=false;this.windowWaves=[];this.spawns=new StageSpawns(scene.schedules.alternate[this.stageIndex][sectionIndex]);this.grab=null;this.cleared=false;
     w.activeAttackers=0;w.cameraX=section.camera2.x;w.cameraY=section.camera2.y;w.occupiedSlots=Array(8).fill(0);
     w.collision=new StageCollision(this.data.collision,layout,scene.layouts.blocks,w.cameraX,{section:sectionIndex});
     this.boundaries=(section.boundaries??[]).map(b=>new StageBoundary(b));
@@ -70,6 +72,8 @@ export class StreetWorld extends MultiEncounter{
       const variant=event.subtype===2?6+event.variant:event.subtype===1?4+event.variant:event.subtype===0?event.variant:null;
       if(variant===null)throw new Error('Street enemy family remains untranslated');
       const actor=new StageEnemy(this.data,{...event,variant});actor.onSound=command=>this.sounds.push(command);this.enemyPool.allocate(actor);
+    }else if(event.type===4&&event.subtype===0){
+      const boss=new Damnd(this.data,event);boss.onSound=command=>this.sounds.push(command);this.bosses.push(boss);
     }else if(event.type===10){
       const prop=new Prop(this.data,event);prop.onSound=command=>this.sounds.push(command);this.propPool.allocate(prop);
     }else if(event.type===8&&event.subtype===15){
@@ -78,7 +82,7 @@ export class StreetWorld extends MultiEncounter{
   }
   step(input){
     if(this.gameOver){this.sounds.length=0;return;}
-    if(this.sectionIndex===0&&this.cleared&&(input&1)&&(this.player.x>>16)>=this.camera.maxX+208)this.enterSection(1);
+    if(this.sectionIndex<2&&this.cleared&&(input&1)&&(this.player.x>>16)>=this.camera.maxX+208)this.enterSection(this.sectionIndex+1);
     this.sounds.length=0;this.refreshActors();const p=this.player,w=this.world;w.pressedInput=input&~p.previousInput;
     if(this.grab?.holding){this.grab.updateHolder(input);if(p.pendingReaction){p.startReaction();this.grab.cancelHolder();}if(p.invulnerable)p.invulnerable--;}
     else p.update(input);
@@ -88,10 +92,10 @@ export class StreetWorld extends MultiEncounter{
     if(p.hitLatch&&(!p.hitAttacker||p.hitAttacker.removed||!this.data.images[p.hitAttacker.animation.image].attackIndex))p.hitLatch=false;
     const enabled=!p.hitLatch&&p.mode!=='dead',candidates=[],objects=[];
     for(const e of this.enemies){
-      w.actorPhase=12-e.slot;const paired=this.grab?.victim===e;
+      w.actorPhase=e instanceof Damnd?0:12-e.slot;const paired=this.grab?.victim===e;
       if(!paired||(!this.grab.updateHeld()&&!this.grab.updateThrown(w)))e.update(w,p);
       if(!this.data.images[p.animation.image].attackIndex)e.hitLatch=false;
-      if(enabled&&e.contactsReady!==false&&!e.hitLatch&&!['corpse','removePending','removed'].includes(e.mode))candidates.push(e);
+      if(enabled&&e.contactsReady!==false&&!e.hitLatch&&!['dying','corpse','removePending','removed'].includes(e.mode))candidates.push(e);
       if(e.removed){this.limits.release(e.character.family??0);this.enemyPool.release(e.slot);}
     }
     for(const item of this.items){w.actorPhase=9-item.slot;item.update(w);if(item.removed)this.pickupPool.release(item.slot);}
@@ -119,7 +123,7 @@ export class StreetWorld extends MultiEncounter{
     for(const b of this.boundaries)b.update({x:w.cameraX,maxX:this.camera.maxX},e=>w.collision.paint(e));
     if(++this.difficultyTicks===600){this.difficultyTicks=0;w.difficulty=Math.min(24,w.difficulty+1);}
     w.frame++;
-    this.cleared=this.spawns.complete&&this.windowWaves.every(wave=>!wave.timer)&&!this.enemyPool.slots.some(Boolean);
+    this.cleared=(this.bosses.length||w.cameraX===this.camera.maxX)&&this.spawns.complete&&this.windowWaves.every(wave=>!wave.timer)&&!this.enemyPool.slots.some(Boolean)&&this.bosses.every(b=>b.defeated);
     if(p.mode==='dead'){
       if(this.deathTimer===undefined||this.deathTimer===null)this.deathTimer=60;
       else if(!--this.deathTimer){if(--this.lives>0){w.difficulty=Math.max(4,w.difficulty-2);this.difficultyTicks=0;this.respawn();}else this.gameOver=w.gameOver=true;}

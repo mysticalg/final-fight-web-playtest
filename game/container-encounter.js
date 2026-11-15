@@ -1,9 +1,9 @@
-import{Player}from'./player.js?v=95334e3459';
-import{Prop}from'./prop.js?v=95334e3459';
-import{Pickup,collectPickup}from'./pickup.js?v=95334e3459';
-import{CollisionGrid}from'./collision.js?v=95334e3459';
-import{GameRandom}from'./enemy-ai.js?v=95334e3459';
-import{contact}from'./combat.js?v=95334e3459';
+import{Player}from'./player.js?v=e8d37198c6';
+import{Prop}from'./prop.js?v=e8d37198c6';
+import{Pickup,collectPickup}from'./pickup.js?v=e8d37198c6';
+import{CollisionGrid}from'./collision.js?v=e8d37198c6';
+import{GameRandom}from'./enemy-ai.js?v=e8d37198c6';
+import{contact}from'./combat.js?v=e8d37198c6';
 
 // Bounded object practice while stage entry and scripted waves are recovered.
 export class ContainerEncounter{

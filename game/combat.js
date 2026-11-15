@@ -37,7 +37,7 @@ export function contact(data,player,enemy,{queued=false}={}) {
   const special=player.mode.startsWith('escape');
   if(enemy.isProp){
     if(player.floorOffset)return false;
-    if(enemy.subtype!==1||enemy.appearance<2){const range=enemy.subtype===1?8:[4,6,8].includes(enemy.subtype)?16:10;if(depth<(special?-range:0)||depth>range*(special?2:1))return false;}
+    if(enemy.subtype!==1||enemy.appearance<2){const range=enemy.subtype===1?8:enemy.subtype===7?(special?16:8):[4,6,8].includes(enemy.subtype)?16:10;if(depth<(special?-range:0)||depth>range*(special?2:1))return false;}
   }else if(dx>256||depth < (special?-24:-12)||depth > (special?24:9))return false;
   const attack=resolveBoxes(player,image).attack;
   const hurt=resolveBoxes(enemy,data.images[enemy.animation.image]).hurt;
@@ -89,5 +89,7 @@ export function incomingContact(data,enemy,player,{queued=false}={}) {
   enemy.hitStop=6;
   return true;
 }
+
+
 
 
