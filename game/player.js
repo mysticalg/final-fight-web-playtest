@@ -1,4 +1,4 @@
-import {Animation} from './animation.js';
+import {Animation} from './animation.js?v=a063fff218';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
 // This slice covers free movement, jump/landing and first standing whiff.

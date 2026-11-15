@@ -1,6 +1,6 @@
-import {Player} from './game/player.js';
-import {Presentation} from './game/presentation.js';
-import {readGamepad} from './game/gamepad.js';
+import {Player} from './game/player.js?v=a063fff218';
+import {Presentation} from './game/presentation.js?v=a063fff218';
+import {readGamepad} from './game/gamepad.js?v=a063fff218';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -75,7 +75,7 @@ function draw() {
   status.textContent = paused ? 'Paused' : `${player.character.name} · ${player.mode} · build ${data.version}`;
 }
 try {
-  const metadata = await fetch('./assets/game.json');
+  const metadata = await fetch('./assets/game.json?v=a063fff218');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
   presentation = await Presentation.load(data);
