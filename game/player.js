@@ -1,8 +1,8 @@
-import {Animation} from './animation.js?v=699993942d';
+import {Animation} from './animation.js?v=4ff6cbb6d1';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
 // This slice covers free movement, jump/landing and first standing whiff.
-// Contact, grabs, combos, weapons and damage are deliberately unrecovered.
+// Contact uses the separate combat module; grabs, combos and weapons remain open.
 export class Player {
   constructor(data, character = 0) {
     this.data = data;
@@ -15,6 +15,8 @@ export class Player {
     this.distance = 0;
     this.previousInput = 0;
     this.mode = 'idle';
+    this.hitStop = 0;
+    this.combat = this.character.combat;
     this.animation = new Animation(data.animationEntries, this.character.actions.idle);
   }
   action(name) { this.animation.set(this.character.actions[name]); }
@@ -49,6 +51,8 @@ export class Player {
     const previous = this.previousInput;
     const pressed = input & ~previous;
     this.previousInput = input;
+    // 00B3A4: standing attacks consume hit-stop without advancing animation.
+    if (this.hitStop && this.mode === 'punch') { this.hitStop--; return; }
     if (this.mode === 'punchPending') {
       this.mode = 'punch'; this.action('punch'); return;
     }

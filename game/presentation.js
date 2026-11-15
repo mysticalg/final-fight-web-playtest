@@ -9,15 +9,27 @@ export class Presentation {
       result.src = path;
     });
     const background = await image(data.background);
-    const sprites = new Map(await Promise.all(Object.entries(data.sprites).map(async ([key,sprite]) => [key, await image(sprite.file)])));
+    const entries=Object.entries(data.sprites),sprites=new Map();
+    let next=0;
+    // Bound requests as the recovered animation library grows.
+    await Promise.all(Array.from({length:Math.min(4,entries.length)},async()=>{
+      while(next<entries.length){const [key,sprite]=entries[next++];sprites.set(key,await image(sprite.file));}
+    }));
     return new Presentation(data,background,sprites);
   }
-  draw(context,player) {
+  draw(context,player,enemy) {
     context.imageSmoothingEnabled = false;
     context.drawImage(this.background,0,0);
+    const actors=enemy?[player,enemy].sort((a,b)=>b.groundY-a.groundY):[player];
+    for(const actor of actors)this.actor(context,actor);
+  }
+  actor(context,player) {
     const key = `${player.animation.image}-${player.facing}`;
     const sprite = this.data.sprites[key];
     if (!sprite) throw new Error(`Animation graphic is unavailable: ${key}`);
-    context.drawImage(this.sprites.get(key),(player.x>>16)-this.data.stage.cameraX+sprite.x,240-(player.y>>16)+this.data.stage.cameraY+sprite.y);
+    const image=this.data.images[player.animation.image];
+    const flip=player.facing&&(image.mode===4||image.mode===12);
+    const shake=(player.imageOffset??0)*(flip?-1:1);
+    context.drawImage(this.sprites.get(key),(player.x>>16)-this.data.stage.cameraX+sprite.x+shake,240-(player.y>>16)+this.data.stage.cameraY+sprite.y);
   }
 }
