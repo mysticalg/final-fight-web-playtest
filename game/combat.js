@@ -28,7 +28,7 @@ export function attackDamage(combat,attack,defenseIndex=0) {
 export function contact(data,player,enemy) {
   const image=data.images[player.animation.image];
   if(!image.attackIndex)enemy.hitLatch=false;
-  if(player.mode!=='punch')return false; // Only standing attacks are recovered here.
+  if(!['punch','airborne'].includes(player.mode))return false;
   if(enemy.hitLatch||enemy.health<0)return false;
   // 0033EE / 008D32: ordinary player attack queue, including asymmetric depth.
   const dx=((enemy.x>>16)-(player.x>>16)+128)&65535;
@@ -40,6 +40,7 @@ export function contact(data,player,enemy) {
   // 007330: latch, damage, orientation and six-frame attacker/victim hit-stop.
   enemy.hit(attackDamage(player.combat,attack,enemy.defenseIndex),attack.reaction,player.facing);
   player.hitStop=6;
+  player.comboWindow=45;
   return true;
 }
 export function incomingContact(data,enemy,player) {

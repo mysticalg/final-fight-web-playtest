@@ -1,4 +1,4 @@
-import {Animation} from './animation.js?v=1bb9bc2b0d';
+import {Animation} from './animation.js?v=c0669bde75';
 const word = value => value << 16 >> 16;
 
 // Actor with an optional recovered Bred controller. Leaving brain unset selects
@@ -33,9 +33,9 @@ export class Enemy {
     if(this.mode==='hurtPending') {
       // 0272E8 / 027334 / 02734A / 0273D2: first punches use types zero/one.
       this.facing=this.hitFrom^1; this.direction=this.hitFrom;
-      if(this.health<0) {
+      if(this.health<0||this.reaction===3) {
         this.y=(this.y+52*65536)|0; this.mode='fallInit'; this.action('fall');
-      } else { this.mode='hurt'; this.action(this.reaction===1?'hurt1':'hurt'); }
+      } else { this.mode='hurt'; this.action(this.reaction===1||this.reaction===2?'hurt1':'hurt'); }
       return;
     }
     if(this.mode==='hurt') {
@@ -56,25 +56,42 @@ export class Enemy {
     // 027808: fatal knockback shares original fall/bounce/slide states.
     if(this.hitStop) { this.hitStop--; return; }
     if(this.mode==='fallInit') {
-      this.vy=0x300; this.vx=this.direction?-0x400:0x400; this.mode='fall'; return;
+      this.vy=this.health<0?0x300:0x380;
+      this.vx=(this.health<0?0x400:0x200)*(this.direction?-1:1); this.mode='fall'; return;
     }
     if(this.mode==='fall'||this.mode==='bounce') {
       this.integrate();
       if((this.y>>16)<=(this.groundY>>16)) {
         this.y=this.groundY;
         if(this.mode==='fall') {
-          this.mode='bounce'; this.action('down'); this.vy=0x400; this.vx=this.direction?-0x100:0x100; return;
-        } else { this.mode='slide'; this.vx=this.direction?-0x100:0x100; this.drag=this.direction?-16:16; }
+          this.mode='bounce'; this.action('down'); this.vy=this.health<0?0x400:0x280;
+          this.vx=(this.health<0?0x100:0x280)*(this.direction?-1:1); return;
+        } else { this.mode='slide'; this.vx=this.direction?-0x100:0x100; this.drag=(this.health<0?16:20)*(this.direction?-1:1); }
       }
       this.animation.tick(); return;
     }
     if(this.mode==='slide') {
       // 02794C / 003122: decelerate to zero without crossing its sign.
-      this.animation.tick();
+      if(this.health<0)this.animation.tick();
       const next=word(this.vx-this.drag);
       this.vx=(this.vx>=0)===(next>=0)?next:0;
       this.x=(this.x+this.vx*256)|0;
-      if(!this.vx)this.mode='defeated';
+      if(!this.vx){
+        if(this.health<0)this.mode='defeated';
+        else {this.mode='recoverInit';if(this.brain)this.brain.release(world);}
+      } else if(this.health>=0)this.animation.tick();
+      return;
+    }
+    if(this.mode==='recoverInit') {
+      this.speedX=this.speedY=0;this.groundY=this.y;
+      this.recoveryTimer=this.character.recoveryWait[world.random.next()&31];this.mode='recoverWait';return;
+    }
+    if(this.mode==='recoverWait') {
+      if(--this.recoveryTimer===0){this.mode='recover';this.action('recover');}return;
+    }
+    if(this.mode==='recover') {
+      this.animation.tick();
+      if(this.animation.flags&128){this.mode='neutral';if(this.brain)this.brain.seek(world);else this.action('neutral');}
     }
   }
 }

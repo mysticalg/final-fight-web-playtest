@@ -1,8 +1,8 @@
-import {Player} from './player.js?v=1bb9bc2b0d';
-import {Enemy} from './enemy.js?v=1bb9bc2b0d';
-import {BredBrain} from './bred-brain.js?v=1bb9bc2b0d';
-import {GameRandom} from './enemy-ai.js?v=1bb9bc2b0d';
-import {contact,incomingContact} from './combat.js?v=1bb9bc2b0d';
+import {Player} from './player.js?v=c0669bde75';
+import {Enemy} from './enemy.js?v=c0669bde75';
+import {BredBrain} from './bred-brain.js?v=c0669bde75';
+import {GameRandom} from './enemy-ai.js?v=c0669bde75';
+import {contact,incomingContact} from './combat.js?v=c0669bde75';
 
 // Bounded single-enemy encounter. Stage entry, collision maps and spawn waves
 // remain separate recovery work; the stationary combat test is still available.
@@ -19,7 +19,7 @@ export class Encounter {
     player.update(input);
     // 008C80 publishes player state flags used by enemy attack selection.
     player.airborne=(player.y>>16)!==(player.groundY>>16);
-    player.evading=['walk','stopping','knockdownInit','knockdown','hurtBounce','hurtSlide','recoverPending','recover'].includes(player.mode);
+    player.evading=['knockdownInit','knockdown','hurtBounce','hurtSlide','recoverPending','recover'].includes(player.mode);
     enemy.update(this.world,player);
     // Original contact queues apply player attacks before enemy attacks. Damage
     // becomes a reaction after the next state handler (A838 / 22BC0).
@@ -29,7 +29,7 @@ export class Encounter {
       const camera=this.data.stage.cameraX;
       player.x=Math.max((camera+24)*65536,Math.min((camera+360)*65536,player.x));
       // Temporary floor bounds apply to grounded control states only.
-      if(['idle','walk','stopping','punchPending','punch','landing','idlePending'].includes(player.mode)) {
+      if(['idle','walkPending','walk','stopping','jumpPending','punchPending','punch','landing','idlePending'].includes(player.mode)) {
         player.y=Math.max(16*65536,Math.min(96*65536,player.y));player.groundY=player.y;
       }
     }

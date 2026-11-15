@@ -1,5 +1,6 @@
-import {Animation} from './animation.js?v=1bb9bc2b0d';
-import {receiveHit,updateReaction} from './player-reaction.js?v=1bb9bc2b0d';
+import {Animation} from './animation.js?v=c0669bde75';
+import {receiveHit,updateReaction} from './player-reaction.js?v=c0669bde75';
+import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=c0669bde75';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
 // Free movement, jump/landing and first standing punch. Damage reactions and
@@ -22,11 +23,12 @@ export class Player {
     this.defenseIndex=this.character.defenseIndex;
     this.invulnerable=0;
     this.imageOffset=0;
+    this.comboCounter=0;this.comboWindow=0;this.attackActive=false;
     this.animation = new Animation(data.animationEntries, this.character.actions.idle);
   }
   action(name) { this.animation.set(this.character.actions[name]); this.imageOffset=0; }
   hit(damage,reaction,facing) { receiveHit(this,damage,reaction,facing); }
-  startReaction() { this.pendingReaction=false;this.mode='hurtPending'; }
+  startReaction() { this.pendingReaction=false;this.mode='hurtPending';this.comboCounter=0;this.comboWindow=0;this.attackActive=false; }
   chooseDirection(input) {
     this.direction = this.data.directionTable[input & 15];
     const facing = this.data.facingTable[this.direction];
@@ -58,6 +60,7 @@ export class Player {
     this.updateState(input);
     // 00A838 detects damage after the current state handler has run.
     if(this.pendingReaction)this.startReaction();
+    if(!this.attackActive&&this.comboWindow)this.comboWindow--;
     // 00A79A: timer maintenance follows the state handler.
     if(this.invulnerable)this.invulnerable--;
   }
@@ -67,17 +70,14 @@ export class Player {
     this.previousInput = input;
     if(updateReaction(this,input,pressed,previous))return;
     // 00B3A4: standing attacks consume hit-stop without advancing animation.
-    if (this.hitStop && ['punch','punchPending'].includes(this.mode)) { this.hitStop--; return; }
-    if (this.mode === 'punchPending') {
-      this.mode = 'punch'; this.action('punch'); return;
-    }
-    if (this.mode === 'punch') {
-      if (this.animation.flags & 128) this.mode = 'idlePending';
-      else this.animation.tick();
+    if (this.hitStop && ['punch','punchPending','airborne'].includes(this.mode)) { this.hitStop--; return; }
+    if (['punchPending','punch'].includes(this.mode)) {
+      standingUpdate(this,input,pressed);
       return;
     }
-    if (this.mode === 'idlePending') {
-      this.mode = 'idle'; this.action('idle'); this.animation.tick(); return;
+    if(this.mode==='jumpPending') {
+      this.mode='jumpStart';this.groundY=this.y;this.airAttackUsed=this.airDownUsed=false;
+      this.vy=0x600;this.vx=this.drag=0;this.action('jumpStart');return;
     }
     if (this.mode === 'jumpStart') {
       // 00ABB4–00AC2E: hold pose until flagged or a new directional input.
@@ -86,11 +86,12 @@ export class Player {
         const horizontal = input & 3;
         this.vx = horizontal ? this.character.jumpSpeed : 0;
         this.drag = horizontal ? this.character.jumpDrag : 0;
-        if (this.facing) { this.vx = -this.vx; this.drag = -this.drag; }
+        if (this.facing) { this.vx = -this.vx|0; this.drag = -this.drag|0; }
         const backwards = horizontal && ((!this.facing && (input & 2)) || (this.facing && (input & 1)));
         if (backwards) { this.vx = -this.vx; this.action('jumpBackward'); }
         else this.action(horizontal ? 'jumpForward' : 'jump');
         this.mode = 'airborne';
+        if(!backwards)airAttack(this,input,pressed);
       }
       return;
     }
@@ -99,7 +100,7 @@ export class Player {
       if ((this.y >> 16) <= (this.groundY >> 16)) {
         this.y = this.groundY;
         this.mode = 'landingPending';
-      } else this.animation.tick();
+      } else { airAttack(this,input,pressed);this.animation.tick(); }
       return;
     }
     if (this.mode === 'landingPending') {
@@ -113,29 +114,22 @@ export class Player {
       if (((input & 3) && this.direction !== 8) || (this.animation.flags & 128)) this.mode = 'idlePending';
       return;
     }
-    this.chooseDirection(input);
-    if (pressed & 0x20) {
-      // 00AB84–00ABB0.
-      this.mode = 'jumpStart'; this.groundY = this.y;
-      this.vy = 0x600; this.vx = this.drag = 0;
-      this.action('jumpStart'); return;
+    // A91E / AACE / AB16: direction changes queue walking; displacement starts
+    // on the following update. Movement runs before common jump/attack checks.
+    if(this.mode==='idlePending'){this.mode='idle';this.action('idle');}
+    if(this.mode==='walkPending'){
+      this.mode='walk';this.animation.set(this.character.walk[this.walkIndex]);
     }
-    if (pressed & 0x10) {
-      // Idle advances its pose before BBFA queues the standing attack.
-      if(this.mode==='idle')this.animation.tick();
-      this.mode = 'punchPending'; return;
+    if(this.mode==='walk'){
+      this.chooseDirection(input);
+      if(this.direction!==8)this.walk();else{this.mode='stopping';this.stopFrames=6;}
+    } else if(this.mode==='stopping'){
+      if(--this.stopFrames===0){this.mode='idle';this.action('idle');}
+      this.chooseDirection(input);if(this.direction!==8)this.mode='walkPending';
+    } else {
+      this.animation.tick();this.chooseDirection(input);if(this.direction!==8)this.mode='walkPending';
     }
-    if (this.direction !== 8) {
-      if (this.mode !== 'walk') {
-        this.mode = 'walk';
-        this.animation.set(this.character.walk[this.walkIndex]);
-      }
-      this.walk();
-    } else if (this.mode === 'walk') {
-      // 00AB3A–00AB70: six updates before returning to idle.
-      this.mode = 'stopping'; this.stopFrames = 6;
-    } else if (this.mode === 'stopping') {
-      if (--this.stopFrames === 0) { this.mode = 'idle'; this.action('idle'); }
-    } else this.animation.tick();
+    if(pressed&32)this.mode='jumpPending';
+    if(pressed&16)queueStanding(this);
   }
 }
