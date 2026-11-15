@@ -1,4 +1,4 @@
-import{drawStageArt}from'./stage-art.js?v=b63cce8c3d';
+import{drawStageArt,drawStageForeground}from'./stage-art.js?v=540144d589';
 // Displays converted PNG assets. No ROM data or CPU runtime is loaded.
 export class Presentation {
   constructor(data, background, sprites) { this.data = data; this.background = background; this.sprites = sprites; }
@@ -30,9 +30,10 @@ export class Presentation {
   draw(context,player,enemy,view) {
     context.imageSmoothingEnabled = false;
     const art=view&&this.data.scenes?.art[view.key??'0:0'];
-    if(art)drawStageArt(context,this.scenery.get(art.file),art,view.projection);else context.drawImage(this.background,0,0);
+    if(art)drawStageArt(context,this.scenery.get(art.file),art,view.projection,view.tileEdits);else context.drawImage(this.background,0,0);
     const actors=[player,...(Array.isArray(enemy)?enemy:enemy?[enemy]:[])].sort((a,b)=>b.groundY-a.groundY);
     for(const actor of actors)this.actor(context,actor,view);
+    if(art)drawStageForeground(context,this.scenery.get(art.file),art,view.projection,view.tileEdits);
   }
   actor(context,player,camera=this.data.stage) {
     camera??=this.data.stage;
