@@ -1,3 +1,4 @@
+import{obstacleResponse}from'./obstacle-collision.js?v=1df997c713';
 const word=value=>value<<16>>16;
 // Response precedence for the two sides of a grounded actor (007CFE).
 const widePriority=[0,1,1,0,1,0,0,0,0,0,1,1,1,1,0,0,0,0,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0];
@@ -39,9 +40,29 @@ export function raisedTileResponse(kind,x,y){
   return{kind,dx,dy,response};
 }
 export class CollisionGrid{
-  constructor(data,cameraX=0){this.data=data;this.cameraX=cameraX;}
+  constructor(data,cameraX=0,{obstacles=[]}={}){this.data=data;this.cameraX=cameraX;this.obstacles=obstacles;}
   lookup(x,y){return this.data.tiles[gridIndex(x,y)];}
-  probe(x,y){
+  objectProbe(x,y,actor){
+    for(const object of this.obstacles){
+      if(!object.solid)continue;
+      const result=obstacleResponse(object,x,y);
+      if(result){if(actor)actor.collisionObject=object;return result;}
+    }
+    if(actor)actor.collisionObject=null;
+    return tileResponse(this.lookup(x,y),x,y,this.data.curves);
+  }
+  raisedProbe(x,y,actor){
+    if(actor.collisionObject){
+      for(const object of new Set([actor.collisionObject,...this.obstacles])){
+        if(!object.solid)continue;
+        const result=obstacleResponse(object,x,y,{raised:true});
+        if(result){if(result.kind===20)actor.floorOffset=result.height;return result;}
+      }
+      return{kind:255,response:-1,dx:0,dy:0};
+    }
+    return raisedTileResponse(this.lookup(x,y),x,y);
+  }
+  probe(x,y,actor){
     x=word(x);y=word(y);
     // 008436: retain the original word arithmetic and 16px correction.
     const relative=(x-this.cameraX+96)&65535;
@@ -49,17 +70,18 @@ export class CollisionGrid{
       const left=word(relative)<0;
       return{kind:left?5:3,dx:left?((-word(relative))&15)+1:-((relative-576)&15)-1,dy:0,response:4};
     }
-    return tileResponse(this.lookup(x,y),x,y,this.data.curves);
+    return this.objectProbe(x,y,actor);
   }
   resolve(actor,offset=0){
-    const response=this.resolveWith(actor,offset,(x,y)=>actor.floorOffset?raisedTileResponse(this.lookup(x,y),x,y):this.probe(x,y));
+    const response=this.resolveWith(actor,offset,(x,y)=>actor.floorOffset?this.raisedProbe(x,y,actor):this.probe(x,y,actor));
     if(response<0&&!offset){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}
     return response;
   }
-  resolveWith(actor,offset,probe){
+  resolveWith(actor,offset,probe,secondProbe=probe){
     const first=probe(word((actor.x>>16)+offset),actor.groundY>>16);
     actor.collisionType=first.response;actor.collisionTile=first.kind;
     if(first.response<=0)return first.response;
+    if(first.response===3){actor.x=(actor.x+first.dx*65536)|0;actor.y=(actor.y+first.dy*65536)|0;actor.groundY=(actor.groundY+first.dy*65536)|0;return first.response;}
     const oldX=actor.x>>16;actor.x=(actor.x+first.dx*65536)|0;
     let crossed=((oldX^(actor.x>>16))&16)!==0;
     if(!crossed){
@@ -68,7 +90,7 @@ export class CollisionGrid{
       crossed=((oldY^(actor.groundY>>16))&16)!==0;
     }
     if(crossed){
-      const next=probe(word((actor.x>>16)+offset),actor.groundY>>16);
+      const next=secondProbe(word((actor.x>>16)+offset),actor.groundY>>16);
       if(next.response!==0){
         actor.collisionType=next.response;actor.collisionTile=next.kind;
         actor.x=(actor.x+next.dx*65536)|0;actor.y=(actor.y+next.dy*65536)|0;actor.groundY=(actor.groundY+next.dy*65536)|0;
@@ -79,10 +101,10 @@ export class CollisionGrid{
   resolveWide(actor,width=16){
     const offset=actor.facing?-width:width;
     this.resolve(actor,offset);
-    const firstType=actor.collisionType,firstTile=actor.collisionTile;
+    const firstType=actor.collisionType,firstTile=actor.collisionTile,firstObject=actor.collisionObject;
     this.resolve(actor,-offset);
     if(widePriority[((actor.collisionType+1)<<3)+(firstType+1)]){
-      actor.collisionType=firstType;actor.collisionTile=firstTile;
+      actor.collisionType=firstType;actor.collisionTile=firstTile;actor.collisionObject=firstObject;
     }
     if(actor.collisionType<0){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}
     return actor.collisionType;
@@ -90,16 +112,25 @@ export class CollisionGrid{
   resolveAir(actor,width=16,height=64){
     const offset=actor.vx<0?-width:width,raised=!!actor.floorOffset;
     const probe=(x,y)=>{
-      const result=actor.floorOffset?raisedTileResponse(this.lookup(x,y),x,y):tileResponse(this.lookup(x,y),x,y,this.data.curves);
+      const elevated=!!actor.floorOffset;
+      const result=elevated?this.raisedProbe(x,y,actor):this.objectProbe(x,y,actor);
       if(result.response>=2){
-        if(((y+height)&65535)<=((actor.y>>16)&65535)){
-          actor.floorOffset=height;actor.groundY=(actor.groundY+height*65536)|0;result.response=0;
+        const surfaceHeight=elevated?height:result.height??height;
+        if(((y+surfaceHeight)&65535)<=((actor.y>>16)&65535)){
+          actor.floorOffset=surfaceHeight;actor.groundY=(actor.groundY+surfaceHeight*65536)|0;result.response=0;
         }else result.response=1;
       }
       return result;
     };
-    const first=this.resolveWith(actor,offset,probe);
-    if(raised&&first<=0){const second=this.resolveWith(actor,-offset,probe);if((first&second)<0){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}}
+    // 007F02 calls the raised-object helper for its support side effects,
+    // then unconditionally uses the static raised response for correction.
+    const secondProbe=(x,y)=>{
+      if(!actor.floorOffset)return probe(x,y);
+      this.raisedProbe(x,y,actor);
+      return raisedTileResponse(this.lookup(x,y),x,y);
+    };
+    const first=this.resolveWith(actor,offset,probe,secondProbe);
+    if(raised&&first<=0){const second=this.resolveWith(actor,-offset,probe,secondProbe);if((first&second)<0){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}}
     else if(!raised&&first<0){actor.groundY=(actor.groundY-(actor.floorOffset??0)*65536)|0;actor.floorOffset=0;}
     return actor.collisionType;
   }

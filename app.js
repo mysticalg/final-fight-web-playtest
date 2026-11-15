@@ -1,8 +1,8 @@
-import {Encounter} from './game/encounter.js?v=899e6b5466';
-import {MultiEncounter} from './game/multi-encounter.js?v=899e6b5466';
-import {Presentation} from './game/presentation.js?v=899e6b5466';
-import {readGamepad} from './game/gamepad.js?v=899e6b5466';
-import {GameAudio} from './game/audio.js?v=899e6b5466';
+import {Encounter} from './game/encounter.js?v=1df997c713';
+import {MultiEncounter} from './game/multi-encounter.js?v=1df997c713';
+import {Presentation} from './game/presentation.js?v=1df997c713';
+import {readGamepad} from './game/gamepad.js?v=1df997c713';
+import {GameAudio} from './game/audio.js?v=1df997c713';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -93,7 +93,7 @@ function draw() {
   document.querySelector('#combat-status').textContent = encounter.enemies?`${encounter.enemies.map(e=>`${e.character.name} ${Math.max(0,e.health)}/${e.character.health}`).join(' · ')} · ${encounter.hits} landed · ${encounter.receivedHits} received`:`${enemy.character.name} · ${stateLabels[enemyState]} · HP ${Math.max(0,enemy.health)}/${enemy.character.health} · ${encounter.hits} landed · ${encounter.receivedHits} received`;
 }
 try {
-  const metadata = await fetch('./assets/game.json?v=899e6b5466');
+  const metadata = await fetch('./assets/game.json?v=1df997c713');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
   audio=new GameAudio(data.audio,{onState:state=>{

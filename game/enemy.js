@@ -1,4 +1,5 @@
-import {Animation} from './animation.js?v=899e6b5466';
+import {Animation} from './animation.js?v=1df997c713';
+import{faceTarget}from'./enemy-ai.js?v=1df997c713';
 const word = value => value << 16 >> 16;
 
 // Actor with an optional recovered Bred controller. Leaving brain unset selects
@@ -52,11 +53,11 @@ export class Enemy {
     }
     if(this.mode==='releasedPending'){
       this.speedX=this.speedY=0;this.releaseTimer=(this.character.releaseWait??this.data.grabs.releaseWait)[world.random.next()&31];this.mode='releasedWait';this.action('neutral');
-      if((world.frame&7)===0)this.facing=(target.x>>16)<(this.x>>16)?1:0;return;
+      if(((world.frame+(world.actorPhase??0))&7)===0)faceTarget(this,target);return;
     }
     if(this.mode==='releasedWait'){
       if(!--this.releaseTimer){this.mode='neutral';if(this.brain){this.brain.state='seek';this.brain.phase=0;}}
-      if((world.frame&7)===0)this.facing=(target.x>>16)<(this.x>>16)?1:0;return;
+      if(((world.frame+(world.actorPhase??0))&7)===0)faceTarget(this,target);return;
     }
     if(this.mode==='hurtPending') {
       // 0272E8 / 027334 / 02734A / 0273D2: first punches use types zero/one.
@@ -103,11 +104,12 @@ export class Enemy {
       if(!this.vx){this.mode=this.health<0?'defeated':'recoverInit';if(this.health>=0&&this.brain)this.brain.release(world);}return;
     }
     if(this.mode==='fallInit') {
+      this.collisionWait=0;
       this.vy=this.health<0?0x300:0x380;
       this.vx=(this.health<0?0x400:0x200)*(this.direction?-1:1); this.mode='fall'; return;
     }
     if(this.mode==='fall'||this.mode==='bounce') {
-      if(this.collisionWait){this.collisionWait--;this.animation.tick();return;}
+      if(this.mode==='fall'&&this.collisionWait){this.collisionWait--;this.animation.tick();return;}
       this.integrate();
       if(world?.collision?.resolve(this)>0){
         this.vx=0;

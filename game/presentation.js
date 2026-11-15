@@ -36,7 +36,7 @@ export class Presentation {
     const sprite = this.data.sprites[key];
     if (!sprite) throw new Error(`Animation graphic is unavailable: ${key}`);
     const image=this.data.images[player.animation.image];
-    const flip=player.facing&&(image.mode===4||image.mode===12);
+    const flip=player.facing&&(image.mode===4||image.mode===12||image.mode===16);
     const shake=(player.imageOffset??0)*(flip?-1:1);
     const x=(player.x>>16)-this.data.stage.cameraX+sprite.x+shake,y=240-(player.y>>16)+this.data.stage.cameraY+sprite.y;
     if(sprite.atlasX!==undefined)context.drawImage(this.sprites.get(key),sprite.atlasX,sprite.atlasY,sprite.width,sprite.height,x,y,sprite.width,sprite.height);

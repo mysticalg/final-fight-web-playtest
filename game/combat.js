@@ -29,7 +29,7 @@ export function contact(data,player,enemy,{queued=false}={}) {
   const image=data.images[player.animation.image];
   if(!queued&&!image.attackIndex)enemy.hitLatch=false;
   if(image.attackIndex&128)return false;
-  if(!queued&&!['punch','airborne','escapePending','escape','escapeLanding'].includes(player.mode))return false;
+  if(!queued&&!['punch','airborne','wallAir','wallClingPending','escapePending','escape','escapeLanding'].includes(player.mode))return false;
   if((!queued&&enemy.hitLatch)||enemy.health<0)return false;
   // 0033EE / 008D32: ordinary player attack queue, including asymmetric depth.
   const dx=((enemy.x>>16)-(player.x>>16)+128)&65535;
