@@ -1,4 +1,4 @@
-import {escapePressed,queueEscape} from './player-specials.js?v=540144d589';
+import {escapePressed,queueEscape} from './player-specials.js?v=0854a9c44d';
 // Shared grab helpers: 004180, 00D87A, 003F40, 00D972 and 00D99E.
 const word=value=>value<<16>>16;
 const offsetWord=(position,offset)=>((word((position>>16)+offset)<<16)|(position&65535))|0;
@@ -31,6 +31,7 @@ export function throwHealth(health,character,kind='impact') {
 export class GrabPair {
   constructor(data,rules,holder,victim,random,{comboThrow=false}={}) {
     this.data=data;this.rules=rules;this.holder=holder;this.victim=victim;this.random=random;
+    victim.grabPair=this;
     this.character=rules.characters[holder.characterIndex];
     this.attachmentRows=this.character.attachmentsByFamily?.[victim.character.family??0]??this.character.attachments;
     this.enemyPoses=victim.character.heldPoses??this.character.enemyVariants?.[victim.variant]??this.character.enemyPoses;

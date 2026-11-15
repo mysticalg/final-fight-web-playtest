@@ -1,9 +1,9 @@
-import {Encounter}from'./encounter.js?v=540144d589';
-import {Enemy}from'./enemy.js?v=540144d589';
-import {createEnemyBrain}from'./j-brain.js?v=540144d589';
-import {GrabPair}from'./grabs.js?v=540144d589';
-import {contact,incomingContact,canGrab,canComboThrow}from'./combat.js?v=540144d589';
-import{CollisionGrid}from'./collision.js?v=540144d589';
+import {Encounter}from'./encounter.js?v=0854a9c44d';
+import {Enemy}from'./enemy.js?v=0854a9c44d';
+import {createEnemyBrain}from'./j-brain.js?v=0854a9c44d';
+import {GrabPair}from'./grabs.js?v=0854a9c44d';
+import {contact,incomingContact,canGrab,canComboThrow}from'./combat.js?v=0854a9c44d';
+import{CollisionGrid}from'./collision.js?v=0854a9c44d';
 
 // Original actor order and deferred contact application (8C80 / 3348 / 6F2E).
 // This bounded crowd fixture is separate from stage-driven spawn/progression.
@@ -41,8 +41,8 @@ export class MultiEncounter extends Encounter {
     for(const[index,e]of this.enemies.entries()){
       world.actorPhase=this.enemies.length-1-index;
       const previousHealth=e.health;
-      const paired=this.grab?.victim===e;
-      if(!paired||(!this.grab.updateHeld()&&!this.grab.updateThrown(world)))e.update(world,p);
+      const pair=e.grabPair;
+      if(!pair||(!pair.updateHeld()&&!pair.updateThrown(world)))e.update(world,p);
       if(e.health<previousHealth)this.hits++;
       if(!this.data.images[p.animation.image].attackIndex)e.hitLatch=false;
       // 3348 skips both queues while this enemy remembers a player attack.
