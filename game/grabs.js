@@ -1,3 +1,4 @@
+import {escapePressed,queueEscape} from './player-specials.js?v=f02d1b8759';
 // Shared grab helpers: 004180, 00D87A, 003F40, 00D972 and 00D99E.
 const word=value=>value<<16>>16;
 const offsetWord=(position,offset)=>((word((position>>16)+offset)<<16)|(position&65535))|0;
@@ -28,11 +29,14 @@ export function throwHealth(health,character,kind='impact') {
 // Guy/Cody holder state machine (00CCD4). Actor attachment remains a separate
 // step because the original updates the holder before the held enemy.
 export class GrabPair {
-  constructor(data,rules,holder,victim,random) {
+  constructor(data,rules,holder,victim,random,{comboThrow=false}={}) {
     this.data=data;this.rules=rules;this.holder=holder;this.victim=victim;this.random=random;
     this.character=rules.characters[holder.characterIndex];
+    this.victimMode=victim.mode;this.victimQueued=true;
     this.holding=true;this.held=true;holder.mode='grabInit';victim.mode='heldPending';
     this.queued=true;holder.attachment=0;this.timer=0;
+    this.comboThrow=comboThrow;
+    if(comboThrow){if(holder.characterIndex!==2)holder.facing^=1;this.pose('throw');victim.hitStop=0;}
   }
   pose(name) {
     this.holder.animation.set(this.character.actions[name]);this.holder.imageOffset=0;
@@ -51,16 +55,21 @@ export class GrabPair {
     if(choice==='forward'||choice==='backward'){this.holder.mode='grabThrowPending';this.forward=choice==='forward';}
   }
   updateHolder(input) {
+    const oldMode=this.holder.mode,pressed=input&~this.holder.previousInput;
     this.haggar=this.holder.characterIndex===2;
-    if(this.queued){this.queued=false;this.holder.hitStop=this.victim.hitStop=0;}
+    if(this.queued){this.queued=false;this.holder.hitStop=0;}
     this.updateHolderState(input);
     if(this.haggar&&this.timer&&!--this.timer)this.holder.grabCooldown=this.rules.cooldown[this.random.next()&31];
+    if(['grabInit','grabHoldPending','grabHold','grabCarryPending','grabCarry'].includes(oldMode)&&escapePressed(this.holder,input,pressed)){
+      this.holding=false;queueEscape(this.holder);
+    }
   }
   updateHolderState(input) {
     const p=this.holder,pressed=input&~p.previousInput;p.previousInput=input;
     if(p.mode==='grabInit') {
       p.comboCounter=0;p.comboWindow=0;p.attackActive=false;
-      this.timer=this.rules.holdWait[this.random.next()&31];p.mode='grabHoldPending';
+      if(this.comboThrow){this.comboThrow=false;this.forward=true;p.mode='grabThrowPending';}
+      else {this.timer=this.rules.holdWait[this.random.next()&31];p.mode='grabHoldPending';}
     }
     if(this.haggar&&this.updateHaggar(input,pressed))return;
     if(p.mode==='grabHoldPending'||p.mode==='grabHold') {
@@ -153,6 +162,11 @@ export class GrabPair {
   updateHeld() {
     const v=this.victim;
     if(!this.held)return false;
+    if(this.victimQueued){
+      this.victimQueued=false;
+      if(this.cancelBeforeVictim){this.held=false;v.mode=this.victimMode;return false;}
+      v.hitStop=0;
+    }
     const status=attachHeld(this.holder,v,this.character.attachments);
     if(status===0) {
       v.mode='held';v.animation.set(this.character.enemyPoses[v.attachment&127]);v.imageOffset=0;
@@ -165,6 +179,7 @@ export class GrabPair {
     }
     return true;
   }
+  cancelHolder() {this.holding=false;this.cancelBeforeVictim=this.victimQueued;}
   updateThrown(world) {
     const v=this.victim;
     if(v.mode==='thrownPending') {
@@ -189,7 +204,7 @@ export class GrabPair {
     }
     if(v.mode==='thrownSlide') {
       v.animation.tick();const next=word(v.vx-v.drag);v.vx=(v.vx>=0)===(next>=0)?next:0;v.x=(v.x+v.vx*256)|0;
-      if(!v.vx){v.mode=v.health<0?'defeated':'recoverInit';if(v.brain)v.brain.release(world);}
+      if(!v.vx)v.mode=v.health<0?'defeated':'recoverInit';
       return true;
     }
     return false;

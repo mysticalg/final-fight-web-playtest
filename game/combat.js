@@ -29,12 +29,13 @@ export function contact(data,player,enemy) {
   const image=data.images[player.animation.image];
   if(!image.attackIndex)enemy.hitLatch=false;
   if(image.attackIndex&128)return false;
-  if(!['punch','airborne'].includes(player.mode))return false;
+  if(!['punch','airborne','escapePending','escape','escapeLanding'].includes(player.mode))return false;
   if(enemy.hitLatch||enemy.health<0)return false;
   // 0033EE / 008D32: ordinary player attack queue, including asymmetric depth.
   const dx=((enemy.x>>16)-(player.x>>16)+128)&65535;
   const depth=word((enemy.groundY>>16)-(player.groundY>>16));
-  if(dx>256||depth < -12||depth > 9)return false;
+  const special=player.mode.startsWith('escape');
+  if(dx>256||depth < (special?-24:-12)||depth > (special?24:9))return false;
   const attack=resolveBoxes(player,image).attack;
   const hurt=resolveBoxes(enemy,data.images[enemy.animation.image]).hurt;
   if(!boxesOverlap(attack,hurt))return false;
@@ -42,6 +43,7 @@ export function contact(data,player,enemy) {
   enemy.hit(attackDamage(player.combat,attack,enemy.defenseIndex),attack.reaction,player.facing);
   player.hitStop=6;
   player.comboWindow=45;
+  if(special)player.escapeHit=true;
   return true;
 }
 export function canGrab(data,player,enemy) {
@@ -49,8 +51,17 @@ export function canGrab(data,player,enemy) {
   if(!(image.attackIndex&128)||player.grabSuppressed||player.mode==='dead'||enemy.health<0||enemy.pendingReaction)return false;
   if((player.y>>16)!==(player.groundY>>16)||(enemy.y>>16)!==(enemy.groundY>>16))return false;
   const dx=((enemy.x>>16)-(player.x>>16)+128)&65535,depth=word((enemy.groundY>>16)-(player.groundY>>16));
-  if(dx>256||depth < -12||depth > 9)return false;
+  const special=player.mode.startsWith('escape');
+  if(dx>256||depth < (special?-24:-12)||depth > (special?24:9))return false;
   return boxesOverlap(resolveBoxes(player,image).attack,resolveBoxes(enemy,data.images[enemy.animation.image]).hurt);
+}
+export function canComboThrow(data,player,enemy) {
+  if(enemy.health<0||(enemy.y>>16)!==(enemy.groundY>>16)||['heldPending','held','thrownPending','thrown','thrownBounce','thrownSlide'].includes(enemy.mode))return false;
+  if(!resolveBoxes(enemy,data.images[enemy.animation.image]).hurt)return false;
+  const depth=word((enemy.groundY>>16)-(player.groundY>>16));
+  if(depth < -12||depth > 9)return false;
+  const dx=((player.x>>16)-(enemy.x>>16))&65535;
+  return player.facing?dx<128:dx>0xff80;
 }
 export function incomingContact(data,enemy,player) {
   const image=data.images[enemy.animation.image];

@@ -14,14 +14,15 @@ export class Presentation {
         catch(error){if(retry===2)throw error;}
       }
     };
-    const background = await image(data.background);
-    const entries=Object.entries(data.sprites),sprites=new Map();
+    const entries=Object.entries(data.sprites),loaded=new Map();
+    const paths=[...new Set([data.background,...entries.map(([,sprite])=>sprite.file)])];
     let next=0;
     // Bound requests as the recovered animation library grows.
-    await Promise.all(Array.from({length:Math.min(4,entries.length)},async()=>{
-      while(next<entries.length){const [key,sprite]=entries[next++];sprites.set(key,await image(sprite.file));}
+    await Promise.all(Array.from({length:Math.min(4,paths.length)},async()=>{
+      while(next<paths.length){const path=paths[next++];loaded.set(path,await image(path));}
     }));
-    return new Presentation(data,background,sprites);
+    const sprites=new Map(entries.map(([key,sprite])=>[key,loaded.get(sprite.file)]));
+    return new Presentation(data,loaded.get(data.background),sprites);
   }
   draw(context,player,enemy) {
     context.imageSmoothingEnabled = false;
@@ -36,6 +37,8 @@ export class Presentation {
     const image=this.data.images[player.animation.image];
     const flip=player.facing&&(image.mode===4||image.mode===12);
     const shake=(player.imageOffset??0)*(flip?-1:1);
-    context.drawImage(this.sprites.get(key),(player.x>>16)-this.data.stage.cameraX+sprite.x+shake,240-(player.y>>16)+this.data.stage.cameraY+sprite.y);
+    const x=(player.x>>16)-this.data.stage.cameraX+sprite.x+shake,y=240-(player.y>>16)+this.data.stage.cameraY+sprite.y;
+    if(sprite.atlasX!==undefined)context.drawImage(this.sprites.get(key),sprite.atlasX,sprite.atlasY,sprite.width,sprite.height,x,y,sprite.width,sprite.height);
+    else context.drawImage(this.sprites.get(key),x,y);
   }
 }

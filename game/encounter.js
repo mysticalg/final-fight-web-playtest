@@ -1,9 +1,9 @@
-import {Player} from './player.js?v=63dd6de543';
-import {Enemy} from './enemy.js?v=63dd6de543';
-import {BredBrain} from './bred-brain.js?v=63dd6de543';
-import {GameRandom} from './enemy-ai.js?v=63dd6de543';
-import {contact,incomingContact,canGrab} from './combat.js?v=63dd6de543';
-import {GrabPair} from './grabs.js?v=63dd6de543';
+import {Player} from './player.js?v=f02d1b8759';
+import {Enemy} from './enemy.js?v=f02d1b8759';
+import {BredBrain} from './bred-brain.js?v=f02d1b8759';
+import {GameRandom} from './enemy-ai.js?v=f02d1b8759';
+import {contact,incomingContact,canGrab,canComboThrow} from './combat.js?v=f02d1b8759';
+import {GrabPair} from './grabs.js?v=f02d1b8759';
 
 // Bounded single-enemy encounter. Stage entry, collision maps and spawn waves
 // remain separate recovery work; the stationary combat test is still available.
@@ -14,13 +14,22 @@ export class Encounter {
     this.stationary=stationary;this.bounds=bounds;this.hits=0;this.receivedHits=0;
     this.world={frame:0,random:new GameRandom(0),activeAttackers:0,difficulty:4,slots:data.enemyPositionSlots};
     this.player.worldRandom=this.world.random;
+    this.player.comboThrow=()=>{
+      if(this.grab?.held||this.grab?.holding||!canComboThrow(this.data,this.player,this.enemy))return false;
+      this.grab=new GrabPair(this.data,this.data.grabs,this.player,this.enemy,this.world.random,{comboThrow:true});return true;
+    };
     if(!stationary)this.enemy.brain=new BredBrain(this.enemy);
   }
   step(input) {
     const player=this.player,enemy=this.enemy;
     const previousHealth=enemy.health;
-    if(this.grab?.holding){this.grab.updateHolder(input);if(player.invulnerable)player.invulnerable--;}
+    if(this.grab?.holding){
+      this.grab.updateHolder(input);
+      if(player.pendingReaction){player.startReaction();this.grab.cancelHolder();}
+      if(player.invulnerable)player.invulnerable--;
+    }
     else player.update(input);
+    if(this.grab?.holding&&player.mode==='hurtPending')this.grab.cancelHolder();
     player.grabSuppressed=!!player.grabCooldown;
     if(player.grabCooldown)player.grabCooldown--;
     // 008C80 publishes player state flags used by enemy attack selection.
@@ -33,7 +42,7 @@ export class Encounter {
     if(!this.grab?.holding&&!this.grab?.held){
       if(canGrab(this.data,player,enemy))this.grab=new GrabPair(this.data,this.data.grabs,player,enemy,this.world.random);
       else if(contact(this.data,player,enemy))this.hits++;
-      if(!this.stationary&&!this.grab?.held&&incomingContact(this.data,enemy,player))this.receivedHits++;
+      if(!this.stationary&&incomingContact(this.data,enemy,player))this.receivedHits++;
     }
     if(this.bounds) {
       const camera=this.data.stage.cameraX;

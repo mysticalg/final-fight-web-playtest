@@ -1,9 +1,10 @@
 // Standing progression: BBFA / BE08. Contact opens the original 45-frame
 // continuation window; BA3A freezes that window while an attack is active.
-export function queueStanding(player) {
+export function queueStanding(player,input=0) {
   player.comboCounter=player.comboWindow?(player.comboCounter+2)&65535:0;
   player.comboWindow=0;
   if(player.comboCounter>2*(player.character.combo.length-1))player.comboCounter=0;
+  if(!player.suppressComboThrow&&player.comboCounter===2*(player.character.combo.length-1)&&(input&15)&&!(input&(player.facing?2:1))&&player.comboThrow?.())return;
   player.punchStage=player.comboCounter>>1;
   player.attackActive=true;player.mode='punchPending';
 }
@@ -19,10 +20,10 @@ export function standingUpdate(player,input,pressed) {
   if(flags&128) {
     player.attackActive=false;player.mode='idlePending';
     if(pressed&32)player.mode='jumpPending';
-    if(pressed&16)queueStanding(player);
+    if(pressed&16)queueStanding(player,input);
     return;
   }
-  if(flags&&(pressed&16))queueStanding(player);
+  if(flags&&(pressed&16))queueStanding(player,input);
   player.animation.tick();
 }
 

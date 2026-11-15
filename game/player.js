@@ -1,6 +1,7 @@
-import {Animation} from './animation.js?v=63dd6de543';
-import {receiveHit,updateReaction} from './player-reaction.js?v=63dd6de543';
-import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=63dd6de543';
+import {Animation} from './animation.js?v=f02d1b8759';
+import {receiveHit,updateReaction} from './player-reaction.js?v=f02d1b8759';
+import {queueStanding,standingUpdate,airAttack} from './player-attacks.js?v=f02d1b8759';
+import {escapePressed,queueEscape,updateSpecial} from './player-specials.js?v=f02d1b8759';
 
 // Positions are 16.16; original velocity tables hold signed 8.8 values.
 // Movement, jump/landing and standing attacks. Contact, grabs and damage
@@ -58,7 +59,11 @@ export class Player {
     this.x = (this.x + this.vx * 256) | 0;
   }
   update(input) {
+    const specialAllowed=['idle','idlePending','walkPending','walk','stopping','landing','postThrow','hurt'].includes(this.mode)||(this.mode==='punch'&&!this.hitStop&&(this.animation.flags&128));
+    const pressed=input&~this.previousInput;
+    this.suppressComboThrow=specialAllowed&&escapePressed(this,input,pressed);
     this.updateState(input);
+    if(this.suppressComboThrow)queueEscape(this);
     // 00A838 detects damage after the current state handler has run.
     if(this.pendingReaction)this.startReaction();
     if(!this.attackActive&&this.comboWindow)this.comboWindow--;
@@ -70,6 +75,7 @@ export class Player {
     const previous = this.previousInput;
     const pressed = input & ~previous;
     this.previousInput = input;
+    if(updateSpecial(this))return;
     if(updateReaction(this,input,pressed,previous))return;
     if(this.mode==='postPile') {
       this.invulnerable=Math.max(this.invulnerable,34);this.grabCooldown=this.data.grabs.haggarCooldown[this.worldRandom.next()&31];
@@ -80,7 +86,7 @@ export class Player {
     }
     if(this.mode==='postThrow') {
       this.animation.tick();if(this.animation.flags&128)this.mode='idlePending';
-      if(pressed&32)this.mode='jumpPending';if(pressed&16)queueStanding(this);return;
+      if(pressed&32)this.mode='jumpPending';if(pressed&16)queueStanding(this,input);return;
     }
     // 00B3A4: standing attacks consume hit-stop without advancing animation.
     if (this.hitStop && ['punch','punchPending','airborne'].includes(this.mode)) { this.hitStop--; return; }
@@ -125,6 +131,8 @@ export class Player {
       this.animation.tick();
       if (input & 3) this.chooseDirection(input);
       if (((input & 3) && this.direction !== 8) || (this.animation.flags & 128)) this.mode = 'idlePending';
+      if(pressed&32)this.mode='jumpPending';
+      if(pressed&16)queueStanding(this,input);
       return;
     }
     // A91E / AACE / AB16: direction changes queue walking; displacement starts
@@ -143,6 +151,6 @@ export class Player {
       this.animation.tick();this.chooseDirection(input);if(this.direction!==8)this.mode='walkPending';
     }
     if(pressed&32)this.mode='jumpPending';
-    if(pressed&16)queueStanding(this);
+    if(pressed&16)queueStanding(this,input);
   }
 }

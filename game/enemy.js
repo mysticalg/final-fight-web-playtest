@@ -1,4 +1,4 @@
-import {Animation} from './animation.js?v=63dd6de543';
+import {Animation} from './animation.js?v=f02d1b8759';
 const word = value => value << 16 >> 16;
 
 // Actor with an optional recovered Bred controller. Leaving brain unset selects
@@ -54,7 +54,7 @@ export class Enemy {
         if(this.reaction===6)this.direction^=1;
         this.mode='slamInit';this.action('grabFall');return;
       }
-      if(this.health<0||this.reaction===3) {
+      if(this.health<0||this.reaction===3||this.reaction===7) {
         this.y=(this.y+52*65536)|0; this.mode='fallInit'; this.action('fall');
       } else { this.mode='hurt'; this.action(this.reaction===1||this.reaction===2?'hurt1':'hurt'); }
       return;
