@@ -1,6 +1,6 @@
-import{Enemy}from'./enemy.js?v=c93fb57635';
-import{KnifeBrain}from'./knife-brain.js?v=c93fb57635';
-import{throwHealth}from'./grabs.js?v=c93fb57635';
+import{Enemy}from'./enemy.js?v=4d9b688507';
+import{KnifeBrain}from'./knife-brain.js?v=4d9b688507';
+import{throwHealth}from'./grabs.js?v=4d9b688507';
 const word=n=>n<<16>>16;
 export class KnifeEnemy extends Enemy{
  constructor(data,{variant=8,x,y,level=0,direction=0,parameter=0}={}){

@@ -1,21 +1,22 @@
-import {Player} from './player.js?v=c93fb57635';
-import {Enemy} from './enemy.js?v=c93fb57635';
-import {createEnemyBrain} from './j-brain.js?v=c93fb57635';
-import {GameRandom} from './enemy-ai.js?v=c93fb57635';
-import {contact,incomingContact,canGrab,canComboThrow} from './combat.js?v=c93fb57635';
-import {GrabPair} from './grabs.js?v=c93fb57635';
-import{CollisionGrid}from'./collision.js?v=c93fb57635';
-import{KnifeEnemy}from'./knife-enemy.js?v=c93fb57635';
-import{HeavyEnemy}from'./heavy-enemy.js?v=c93fb57635';
+import {Player} from './player.js?v=4d9b688507';
+import {Enemy} from './enemy.js?v=4d9b688507';
+import {createEnemyBrain} from './j-brain.js?v=4d9b688507';
+import {GameRandom} from './enemy-ai.js?v=4d9b688507';
+import {contact,incomingContact,canGrab,canComboThrow} from './combat.js?v=4d9b688507';
+import {GrabPair} from './grabs.js?v=4d9b688507';
+import{CollisionGrid}from'./collision.js?v=4d9b688507';
+import{KnifeEnemy}from'./knife-enemy.js?v=4d9b688507';
+import{HeavyEnemy}from'./heavy-enemy.js?v=4d9b688507';
+import{SubwayEnemy}from'./subway-enemy.js?v=4d9b688507';
 
 // Bounded single-enemy encounter. Stage entry, collision maps and spawn waves
 // remain separate recovery work; the stationary combat test is still available.
 export class Encounter {
   constructor(data,character=0,{stationary=false,bounds=true,enemyVariant=0,collision=false}={}) {
     this.data=data;this.player=new Player(data,character);
-    this.enemy=data.enemies[enemyVariant].family===4?new HeavyEnemy(data,{x:this.player.x+(stationary?64:104)*65536,y:this.player.y,variant:enemyVariant}):data.enemies[enemyVariant].family===5?new KnifeEnemy(data,{x:this.player.x+(stationary?64:104)*65536,y:this.player.y,direction:stationary?1:0,variant:enemyVariant,level:0}):new Enemy(data,this.player.x+(stationary?64:104)*65536,this.player.y,stationary?1:0,enemyVariant);
+    this.enemy=[3,6,8].includes(data.enemies[enemyVariant].family)?new SubwayEnemy(data,{x:this.player.x+(stationary?64:104)*65536,y:this.player.y,variant:enemyVariant}):data.enemies[enemyVariant].family===4?new HeavyEnemy(data,{x:this.player.x+(stationary?64:104)*65536,y:this.player.y,variant:enemyVariant}):data.enemies[enemyVariant].family===5?new KnifeEnemy(data,{x:this.player.x+(stationary?64:104)*65536,y:this.player.y,direction:stationary?1:0,variant:enemyVariant,level:0}):new Enemy(data,this.player.x+(stationary?64:104)*65536,this.player.y,stationary?1:0,enemyVariant);
     if(this.enemy instanceof KnifeEnemy){this.enemy.mode='neutral';if(stationary)this.enemy.brain=null;}
-    if(this.enemy instanceof HeavyEnemy){this.enemy.mode='neutral';this.enemy.action('neutral');this.enemy.stationary=stationary;this.enemy.facing=stationary?1:0;}
+    if((this.enemy instanceof HeavyEnemy||this.enemy instanceof SubwayEnemy)){this.enemy.mode='neutral';this.enemy.action('neutral');this.enemy.stationary=stationary;this.enemy.facing=stationary?1:0;}
     this.stationary=stationary;this.bounds=bounds;this.hits=0;this.receivedHits=0;
     this.sounds=[];this.player.onSound=this.enemy.onSound=command=>this.sounds.push(command);
     this.world={frame:0,random:new GameRandom(0),activeAttackers:0,difficulty:4,slots:data.enemyPositionSlots};
@@ -25,7 +26,7 @@ export class Encounter {
       if(this.grab?.held||this.grab?.holding||!canComboThrow(this.data,this.player,this.enemy))return false;
       this.grab=new GrabPair(this.data,this.data.grabs,this.player,this.enemy,this.world.random,{comboThrow:true});return true;
     };
-    if(!stationary&&!(this.enemy instanceof HeavyEnemy))this.enemy.brain=createEnemyBrain(this.enemy);
+    if(!stationary&&!((this.enemy instanceof HeavyEnemy||this.enemy instanceof SubwayEnemy)))this.enemy.brain=createEnemyBrain(this.enemy);
   }
   step(input) {
     this.sounds.length=0;

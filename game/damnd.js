@@ -1,5 +1,5 @@
-import{Animation}from'./animation.js?v=c93fb57635';
-import{throwHealth}from'./grabs.js?v=c93fb57635';
+import{Animation}from'./animation.js?v=4d9b688507';
+import{throwHealth}from'./grabs.js?v=4d9b688507';
 const word=n=>n<<16>>16;
 function angle(dx,dy){
   dx=word(dx);dy=word(dy*2);const x=Math.abs(dx),y=Math.abs(dy);
@@ -7,8 +7,7 @@ function angle(dx,dy){
   if(dx<0)a=128-a;if(dy<0)a=256-a;return(64-a)&255;
 }
 
-// Private candidate, deliberately absent from the public runtime allowlist.
-// Damnd's arrival dispatch (03D38A–03D522); normal AI follows separately.
+// Native Damnd arrival, combat, retreats, reinforcements and death.
 export class Damnd{
   constructor(data,{x=2968*65536,y=63*65536}={}){
     this.data=data;this.character=data.bosses[0];this.combat=this.character.combat;this.variant=8;this.slamKeepsHeight=true;
@@ -300,9 +299,8 @@ export class Damnd{
     }
     if(this.arrival==='initialize'){
       this.groundY=this.y;this.facing=1;this.health=this.maxHealth=300;this.invulnerable=40;
-      // Four original arena effects each choose a debris phase. Their graphics
-      // are not integrated into this candidate's renderer yet.
-      for(let i=0;i<4;i++)world.random.next();
+      // Signal the background door patch and four original impact bursts.
+      if(world.damndEntrance)world.damndEntrance(this);else for(let i=0;i<4;i++)world.random.next();
       this.action('jab');this.arrival='pose';this.drawn=true;return;
     }
     if(this.arrival==='pose'){

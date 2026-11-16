@@ -1,7 +1,7 @@
-import {StreetWorld} from './game/street-world.js?v=c93fb57635';
-import {Presentation} from './game/presentation.js?v=c93fb57635';
-import {readGamepad} from './game/gamepad.js?v=c93fb57635';
-import {GameAudio} from './game/audio.js?v=c93fb57635';
+import {StreetWorld} from './game/street-world.js?v=4d9b688507';
+import {Presentation} from './game/presentation.js?v=4d9b688507';
+import {readGamepad} from './game/gamepad.js?v=4d9b688507';
+import {GameAudio} from './game/audio.js?v=4d9b688507';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
@@ -37,7 +37,7 @@ function reset() {
   paused=false;document.querySelector('#pause').textContent='Pause';audio?.setPaused(false);
   encounter = new StreetWorld(data,data.scenes,character.selectedIndex);
   player=encounter.player;enemy=encounter.enemy;
-  audio?.restart();
+  audio?.restart(encounter.musicKey);
   canvas.setAttribute('aria-label','Final Fight. Arrow keys move, Z punches, X jumps. Fight through the Slum and head right.');
   clearInput(); canvas.focus();
   if(presentation)draw();
@@ -82,29 +82,30 @@ function input() {
 function step() {
   if (paused) return;
   encounter.step(input());player=encounter.player;enemy=encounter.enemy;
-  audio?.play(encounter.sounds);
+  audio?.setMusic(encounter.musicKey);audio?.play(encounter.sounds);
   pulseInput = 0;
 }
 function draw() {
   presentation.draw(context,player,encounter.actors,encounter.view);
   status.textContent = `${player.character.name} · HP ${Math.max(0,player.health)}/${player.character.health} · ${encounter.lives} lives${player.weapon?' · '+player.weapon.character.name:''}${paused?' · paused':''}`;
-  document.querySelector('#combat-status').textContent=encounter.gameOver?'GAME OVER':encounter.sectionIndex===2&&encounter.cleared?'SLUM CLEAR':`SLUM · ${['STREET','ROOM','ROOFTOP'][encounter.sectionIndex]}${encounter.cleared?' · GO →':''}${enemy?' · '+enemy.character.name+' '+Math.max(0,enemy.health)+'/'+(enemy.maxHealth??enemy.character.health):''}`;
+  document.querySelector('#combat-status').textContent=encounter.gameOver?'GAME OVER':encounter.cleared&&encounter.sectionIndex===(encounter.stageIndex===0?2:3)?(encounter.stageIndex===0?'SLUM CLEAR':'SUBWAY CLEAR'):`${encounter.stageIndex===0?'SLUM':'SUBWAY'} · ${(encounter.stageIndex===0?['STREET','ROOM','ROOFTOP']:['STATION','TRAIN','PLATFORM','SODOM'])[encounter.sectionIndex]}${encounter.cleared?' · GO →':''}${enemy?' · '+enemy.character.name+' '+Math.max(0,enemy.health)+'/'+(enemy.maxHealth??enemy.character.health):''}`;
   document.querySelector('#continue').hidden=!encounter.gameOver;
 
 }
 try {
-  const metadata = await fetch('./assets/game.json?v=c93fb57635');
+  const metadata = await fetch('./assets/game.json?v=4d9b688507');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
   audio=new GameAudio(data.audio,{onState:state=>{
     audioButton.disabled=state==='loading';
     audioButton.textContent=({loading:'Loading audio…',enabled:'Mute audio',disabled:'Enable audio',error:'Retry audio'})[state];
-    document.querySelector('#audio-status').textContent=({loading:'Loading original music and effects…',enabled:'Original Slum music and recovered combat effects enabled.',disabled:'Audio off.',error:'Audio could not start. Select Retry audio to try again.'})[state];
+    document.querySelector('#audio-status').textContent=({loading:'Loading original music and effects…',enabled:'Original stage music and recovered combat effects enabled.',disabled:'Audio off.',error:'Audio could not start. Select Retry audio to try again.'})[state];
   }});
   audio.setHidden(document.hidden);audioButton.disabled=false;
   presentation = await Presentation.load(data);
   await presentation.loadStage('0:1');
   await presentation.loadStage('0:2');
+  for(const key of['1:0','1:1','1:2','1:3'])await presentation.loadStage(key);
   reset(); draw();
   let previous = performance.now(), accumulator = 0;
   // CPS-1 cadence is approximately 59.64 Hz, not display refresh dependent.

@@ -1,4 +1,4 @@
-import {escapePressed,queueEscape} from './player-specials.js?v=c93fb57635';
+import {escapePressed,queueEscape} from './player-specials.js?v=4d9b688507';
 // Shared grab helpers: 004180, 00D87A, 003F40, 00D972 and 00D99E.
 const word=value=>value<<16>>16;
 const offsetWord=(position,offset)=>((word((position>>16)+offset)<<16)|(position&65535))|0;

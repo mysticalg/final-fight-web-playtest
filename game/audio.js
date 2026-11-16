@@ -35,12 +35,14 @@ export class GameAudio {
     if(this.context)this.context.suspend().catch(()=>{});this.onState('disabled');
   }
   stopVoices() { for(const voice of this.voices)voice.stop();this.voices.clear(); }
-  restart() {
+  setMusic(key){if(key!==this.musicKey&&this.data.music[key])this.restart(key);}
+  restart(key=this.musicKey??'slum') {
+    this.musicKey=key;
     this.stopVoices();this.music?.stop();this.music=null;
     if(!this.enabled||!this.ready)return;
-    const record=this.data.music.slum,buffer=this.buffers.get(record.file);
+    const record=this.data.music[this.musicKey]??this.data.music.slum,buffer=this.buffers.get(record.file);
     const source=this.context.createBufferSource();source.buffer=buffer;
-    source.loop=true;source.loopStart=record.loopStart;source.loopEnd=record.loopEnd;
+    source.loop=record.loop!==false;source.loopStart=record.loopStart??0;source.loopEnd=record.loopEnd??0;
     source.connect(this.context.destination);source.start();this.music=source;
   }
   play(commands) {
