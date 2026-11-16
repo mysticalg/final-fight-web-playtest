@@ -1,4 +1,4 @@
-import{Animation}from'./animation.js?v=65c11d1bb4';
+import{Animation}from'./animation.js?v=999b8c9aee';
 const word=n=>n<<16>>16;
 // Original 056388: authored material, scatter, drag, gravity and flash timelines.
 export class Fragment{

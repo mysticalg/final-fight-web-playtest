@@ -1,4 +1,4 @@
-import{Animation}from'./animation.js?v=65c11d1bb4';
+import{Animation}from'./animation.js?v=999b8c9aee';
 // Original opening actors (01F51E and 01E7AC), separate from combat enemies.
 export class OpeningCast{
  constructor(data,event){

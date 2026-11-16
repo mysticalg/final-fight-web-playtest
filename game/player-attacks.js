@@ -46,4 +46,4 @@ export function airAttack(player,input,pressed,{wall=false}={}) {
   player.airAttackUsed=true;player.action(player.vx?(wall?'wallAir':'airForward'):'airStanding');
   player.sound([5,27,8][player.characterIndex]);
 }
-import{queueWeapon}from'./player-weapons.js?v=65c11d1bb4';
+import{queueWeapon}from'./player-weapons.js?v=999b8c9aee';

@@ -1,33 +1,33 @@
-import{MultiEncounter}from'./multi-encounter.js?v=65c11d1bb4';
-import{StageEnemy}from'./stage-enemy.js?v=65c11d1bb4';
-import{Prop}from'./prop.js?v=65c11d1bb4';
-import{Pickup,collectPickup}from'./pickup.js?v=65c11d1bb4';
-import{StageCollision}from'./stage-collision.js?v=65c11d1bb4';
-import{StageBoundary}from'./stage-boundaries.js?v=65c11d1bb4';
-import{StageSpawns}from'./stage-spawns.js?v=65c11d1bb4';
-import{ActorPool,EnemyLimits}from'./stage-pools.js?v=65c11d1bb4';
-import{advanceCamera,advanceParallax}from'./stage-camera.js?v=65c11d1bb4';
-import{updatePositionSlots}from'./position-slots.js?v=65c11d1bb4';
-import{contact,incomingContact,canGrab}from'./combat.js?v=65c11d1bb4';
-import{GrabPair}from'./grabs.js?v=65c11d1bb4';
-import{Player}from'./player.js?v=65c11d1bb4';
-import{Damnd}from'./damnd.js?v=65c11d1bb4';
-import{KnifeEnemy}from'./knife-enemy.js?v=65c11d1bb4';
-import{Knife}from'./knife.js?v=65c11d1bb4';
-import{Weapon,collectWeapon}from'./weapon.js?v=65c11d1bb4';
-import{StageWaves}from'./stage-waves.js?v=65c11d1bb4';
-import{StageMap}from'./stage-map.js?v=65c11d1bb4';
-import{SceneryPatch,patchTiles}from'./stage-scenery.js?v=65c11d1bb4';
-import{SectionTransition}from'./section-transition.js?v=65c11d1bb4';
-import{Debris}from'./debris.js?v=65c11d1bb4';
-import{Fragment,fragmentBurst}from'./fragment.js?v=65c11d1bb4';
-import{StreetEntrance,EntranceSpawn}from'./street-entrance.js?v=65c11d1bb4';
-import{HeavyEnemy}from'./heavy-enemy.js?v=65c11d1bb4';
-import{SubwayEnemy}from'./subway-enemy.js?v=65c11d1bb4';
-import{KnifeRunner}from'./knife-runner.js?v=65c11d1bb4';
-import{ImpactDust}from'./impact-dust.js?v=65c11d1bb4';
-import{RoomLighting}from'./lighting.js?v=65c11d1bb4';
-import{OpeningCast}from'./opening-cast.js?v=65c11d1bb4';
+import{MultiEncounter}from'./multi-encounter.js?v=999b8c9aee';
+import{StageEnemy}from'./stage-enemy.js?v=999b8c9aee';
+import{Prop}from'./prop.js?v=999b8c9aee';
+import{Pickup,collectPickup}from'./pickup.js?v=999b8c9aee';
+import{StageCollision}from'./stage-collision.js?v=999b8c9aee';
+import{StageBoundary}from'./stage-boundaries.js?v=999b8c9aee';
+import{StageSpawns}from'./stage-spawns.js?v=999b8c9aee';
+import{ActorPool,EnemyLimits}from'./stage-pools.js?v=999b8c9aee';
+import{advanceCamera,advanceParallax}from'./stage-camera.js?v=999b8c9aee';
+import{updatePositionSlots}from'./position-slots.js?v=999b8c9aee';
+import{contact,incomingContact,canGrab}from'./combat.js?v=999b8c9aee';
+import{GrabPair}from'./grabs.js?v=999b8c9aee';
+import{Player}from'./player.js?v=999b8c9aee';
+import{Damnd}from'./damnd.js?v=999b8c9aee';
+import{KnifeEnemy}from'./knife-enemy.js?v=999b8c9aee';
+import{Knife}from'./knife.js?v=999b8c9aee';
+import{Weapon,collectWeapon}from'./weapon.js?v=999b8c9aee';
+import{StageWaves}from'./stage-waves.js?v=999b8c9aee';
+import{StageMap}from'./stage-map.js?v=999b8c9aee';
+import{SceneryPatch,patchTiles}from'./stage-scenery.js?v=999b8c9aee';
+import{SectionTransition}from'./section-transition.js?v=999b8c9aee';
+import{Debris}from'./debris.js?v=999b8c9aee';
+import{Fragment,fragmentBurst}from'./fragment.js?v=999b8c9aee';
+import{StreetEntrance,EntranceSpawn}from'./street-entrance.js?v=999b8c9aee';
+import{HeavyEnemy}from'./heavy-enemy.js?v=999b8c9aee';
+import{SubwayEnemy}from'./subway-enemy.js?v=999b8c9aee';
+import{KnifeRunner}from'./knife-runner.js?v=999b8c9aee';
+import{ImpactDust}from'./impact-dust.js?v=999b8c9aee';
+import{RoomLighting}from'./lighting.js?v=999b8c9aee';
+import{OpeningCast}from'./opening-cast.js?v=999b8c9aee';
 
 // Continuous Slum and Subway gameplay. Original spawn schedules feed shared
 // actor pools, with native opening actors and section progression.
@@ -60,7 +60,7 @@ export class StreetWorld extends MultiEncounter{
     world.spawnDebris=(owner,phase)=>{this.effectEvents.push({owner,phase});fragmentBurst(data,owner,phase,world,e=>this.fragmentPool.allocate(e));};
     world.spawnImpact=(attack,hurt,variant,facing,target)=>{if(!data.debris||!this.debrisPool.free.length)return;const x=attack.x+(((hurt.x-attack.x)<<16>>16)>>1),y=attack.y+(((hurt.y-attack.y)<<16>>16)>>1);if(target!==this.player&&!target.isProp)this.hudEnemy=target;const effect=new Debris(data,{x:x*65536,y:y*65536,groundY:target.groundY,variant});effect.facing=facing;this.debrisPool.allocate(effect);};
     this.player.onImpact=world.spawnImpact;this.player.onContactScore=attack=>{const index=data.hud?.contactScores[this.player.characterIndex]?.[attack.damageIndex>>5];if(index!==undefined)world.awardScore(index,0);};
-    world.damndEntrance=owner=>{this.sceneryFlags[2]=1;this.sounds.push(23);for(const[x,y]of[[2960,152],[2976,152],[2936,120],[3000,120]]){world.random.next();for(let i=0;i<6;i++)if(this.debrisPool.free.length)this.debrisPool.allocate(new Debris(data,{x:x*65536,y:y*65536,groundY:y*65536,variant:0}));}this.effectEvents.push({owner,phase:'damndDoor'});};
+    world.damndEntrance=owner=>{this.sceneryFlags[2]=1;this.sounds.push(23);for(const[x,y,direction]of[[2960,152,1],[2976,152,0],[2936,120,1],[3000,120,0]]){const phase=world.random.next()&3;for(let i=5;i>=0;i--)if(this.fragmentPool.free.length)this.fragmentPool.allocate(new Fragment(data,{x:x*65536,y:y*65536,groundY:y*65536,variant:0,index:i,phase,direction}));}this.effectEvents.push({owner,phase:'damndDoor'});};
     world.stopSpawns=()=>{world.spawnDisabled=true;if(this.waves){this.waves.complete=true;this.waves.cameraLocked=false;}};world.stageCleared=()=>this.stageCleared=true;
     this.player.tryPickup=()=>{const item=collectPickup(this.player,this.pickupPool.slots.filter(Boolean),world.awardScore);if(item){this.collected++;return item;}return collectWeapon(this.player,world.knifeWeapons);};
     this.player.weaponTargetInRange=()=>{
@@ -84,8 +84,8 @@ export class StreetWorld extends MultiEncounter{
   breakDoor(owner,kind){
     this.effectEvents.push({owner,phase:'doorBreak'});if(this.data.dust&&this.debrisPool.free.length)this.debrisPool.allocate(new ImpactDust(this.data,owner));
     for(let group=0;group<2;group++){
-      this.world.random.next();
-      for(let i=kind==='roomExit'?5:6;i>=0;i--)if(this.debrisPool.free.length)this.debrisPool.allocate(new Debris(this.data,{x:kind==='roomExit'?2182*65536:owner.x&-65536,y:kind==='roomExit'?(group?144:88)*65536:((owner.y>>16)+32)*65536,groundY:kind==='roomExit'?(group?144:88)*65536:owner.groundY,variant:kind==='roomExit'?0:2}));
+      const phase=this.world.random.next()&3;
+      for(let i=kind==='roomExit'?5:6;i>=0;i--)if(this.fragmentPool.free.length)this.fragmentPool.allocate(new Fragment(this.data,{index:i,phase,direction:owner.facing,x:kind==='roomExit'?2182*65536:owner.x&-65536,y:kind==='roomExit'?(group?144:88)*65536:((owner.y>>16)+32)*65536,groundY:kind==='roomExit'?(group?144:88)*65536:owner.groundY,variant:kind==='roomExit'?0:2}));
     }
   }
   updateScenery(){

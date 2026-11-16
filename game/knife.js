@@ -1,5 +1,5 @@
-import{Animation}from'./animation.js?v=65c11d1bb4';
-import{resolveBoxes,boxesOverlap}from'./combat.js?v=65c11d1bb4';
+import{Animation}from'./animation.js?v=999b8c9aee';
+import{resolveBoxes,boxesOverlap}from'./combat.js?v=999b8c9aee';
 const word=n=>n<<16>>16;
 export class Knife{
  constructor(data,holder){

@@ -1,4 +1,4 @@
-import {advanceApproach,reachedPosition,faceTarget} from './enemy-ai.js?v=65c11d1bb4';
+import {advanceApproach,reachedPosition,faceTarget} from './enemy-ai.js?v=999b8c9aee';
 const word=value=>value<<16>>16;
 
 // Bred family zero, one-player/no-wall encounter controller. Source: 021FC4,

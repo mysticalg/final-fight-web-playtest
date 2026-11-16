@@ -1,4 +1,4 @@
-import{Enemy}from'./enemy.js?v=65c11d1bb4';
+import{Enemy}from'./enemy.js?v=999b8c9aee';
 
 // Native campaign controllers for the newly connected fighters. Animation,
 // combat boxes and palettes are recovered data; decision timing is provisional.

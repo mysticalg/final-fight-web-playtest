@@ -1,5 +1,5 @@
-import{Animation}from'./animation.js?v=65c11d1bb4';
-// Small animated fragments and impact particles from the original 0554EE actor.
+import{Animation}from'./animation.js?v=999b8c9aee';
+// Original 0554EE punch flashes, weapon impacts and blood animations.
 export class Debris {
  constructor(data,{x,y,groundY,variant=2}){
   this.data=data;this.x=x;this.y=y;this.groundY=groundY;this.variant=variant;this.facing=0;this.state=0;this.visible=false;

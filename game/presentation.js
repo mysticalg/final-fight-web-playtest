@@ -1,5 +1,5 @@
-import{drawStageArt,drawStageForeground}from'./stage-art.js?v=65c11d1bb4';
-import{drawHud}from'./hud.js?v=65c11d1bb4';
+import{drawStageArt,drawStageForeground}from'./stage-art.js?v=999b8c9aee';
+import{drawHud}from'./hud.js?v=999b8c9aee';
 // Displays converted PNG assets. No ROM data or CPU runtime is loaded.
 export class Presentation {
   constructor(data, background, sprites) { this.data = data; this.background = background; this.sprites = sprites; }

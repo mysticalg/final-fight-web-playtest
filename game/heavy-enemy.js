@@ -1,5 +1,5 @@
-import{Enemy}from'./enemy.js?v=65c11d1bb4';import{HeavyBrain}from'./heavy-brain.js?v=65c11d1bb4';
-import{throwHealth}from'./grabs.js?v=65c11d1bb4';
+import{Enemy}from'./enemy.js?v=999b8c9aee';import{HeavyBrain}from'./heavy-brain.js?v=999b8c9aee';
+import{throwHealth}from'./grabs.js?v=999b8c9aee';
 const word=n=>n<<16>>16;
 export class HeavyEnemy extends Enemy{
  constructor(data,{variant=10,x,y,level=0,direction=0,parameter=0}={}){

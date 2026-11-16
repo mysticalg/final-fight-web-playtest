@@ -1,4 +1,4 @@
-import{KnifeEnemy}from'./knife-enemy.js?v=65c11d1bb4';
+import{KnifeEnemy}from'./knife-enemy.js?v=999b8c9aee';
 class RunnerBrain{
  constructor(actor){this.actor=actor;this.rules=actor.character.knifeAI;this.seek();}
  seek(){this.state='run';this.timer=180;this.thrown=false;this.actor.action('neutral');}

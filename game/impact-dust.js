@@ -1,4 +1,4 @@
-import{Animation}from'./animation.js?v=65c11d1bb4';
+import{Animation}from'./animation.js?v=999b8c9aee';
 // Original 05569A impact plume: authored offsets and six recovered poses.
 export class ImpactDust{
  constructor(data,owner){this.data=data;this.x=owner.x+(owner.facing?-16:48)*65536;this.y=owner.y;this.groundY=owner.groundY;this.startX=this.x;this.startY=this.y;this.facing=owner.facing;this.variant=owner.burning?1:0;this.cursor=-1;this.animation=new Animation(data.animationEntries,data.dust.poses[this.variant][0]);this.visible=true;}

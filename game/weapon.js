@@ -1,5 +1,5 @@
-import{Knife}from'./knife.js?v=65c11d1bb4';
-import{Animation}from'./animation.js?v=65c11d1bb4';
+import{Knife}from'./knife.js?v=999b8c9aee';
+import{Animation}from'./animation.js?v=999b8c9aee';
 const word=n=>n<<16>>16;
 const integer=(value,next)=>((next<<16)|(value&65535))|0;
 export class Weapon extends Knife{
