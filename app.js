@@ -1,12 +1,13 @@
-import {StreetWorld} from './game/street-world.js?v=4d9b688507';
-import {Presentation} from './game/presentation.js?v=4d9b688507';
-import {readGamepad} from './game/gamepad.js?v=4d9b688507';
-import {GameAudio} from './game/audio.js?v=4d9b688507';
+import {StreetWorld} from './game/street-world.js?v=65c11d1bb4';
+import {Presentation} from './game/presentation.js?v=65c11d1bb4';
+import {readGamepad} from './game/gamepad.js?v=65c11d1bb4';
+import {GameAudio} from './game/audio.js?v=65c11d1bb4';
 
 const canvas = document.querySelector('#game');
 const context = canvas.getContext('2d', {alpha:false});
 const status = document.querySelector('#status');
 const character = document.querySelector('#character');
+const levelSelect=document.querySelector('#level');
 const keys = new Set(), touch = new Set();
 const bindings = {ArrowRight:1, ArrowLeft:2, ArrowDown:4, ArrowUp:8, KeyZ:16, KeyX:32, KeyC:48};
 let paused = false, encounter, player, enemy, data, presentation, audio;
@@ -36,6 +37,7 @@ function reset() {
   if (!data) return;
   paused=false;document.querySelector('#pause').textContent='Pause';audio?.setPaused(false);
   encounter = new StreetWorld(data,data.scenes,character.selectedIndex);
+  const [stage,section]=levelSelect.value.split(':').map(Number);encounter.startAt(stage,section);
   player=encounter.player;enemy=encounter.enemy;
   audio?.restart(encounter.musicKey);
   canvas.setAttribute('aria-label','Final Fight. Arrow keys move, Z punches, X jumps. Fight through the Slum and head right.');
@@ -46,6 +48,7 @@ character.addEventListener('change', reset);
 
 
 document.querySelector('#reset').addEventListener('click', reset);
+document.querySelector('#start-level').addEventListener('click',reset);
 document.querySelector('#continue').addEventListener('click',()=>{encounter?.continueGame();player=encounter.player;canvas.focus();});
 function togglePause() {
   paused = !paused; clearInput(); document.querySelector('#pause').textContent = paused ? 'Resume' : 'Pause'; canvas.focus();
@@ -93,7 +96,7 @@ function draw() {
 
 }
 try {
-  const metadata = await fetch('./assets/game.json?v=4d9b688507');
+  const metadata = await fetch('./assets/game.json?v=65c11d1bb4');
   if (!metadata.ok) throw new Error('Game assets could not load. Reload the page to try again.');
   data = await metadata.json();
   audio=new GameAudio(data.audio,{onState:state=>{
@@ -106,6 +109,7 @@ try {
   await presentation.loadStage('0:1');
   await presentation.loadStage('0:2');
   for(const key of['1:0','1:1','1:2','1:3'])await presentation.loadStage(key);
+  document.querySelector('#start-level').disabled=false;
   reset(); draw();
   let previous = performance.now(), accumulator = 0;
   // CPS-1 cadence is approximately 59.64 Hz, not display refresh dependent.

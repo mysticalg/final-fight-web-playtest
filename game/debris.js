@@ -1,4 +1,4 @@
-import{Animation}from'./animation.js?v=4d9b688507';
+import{Animation}from'./animation.js?v=65c11d1bb4';
 // Small animated fragments and impact particles from the original 0554EE actor.
 export class Debris {
  constructor(data,{x,y,groundY,variant=2}){

@@ -35,10 +35,10 @@ export class GameAudio {
     if(this.context)this.context.suspend().catch(()=>{});this.onState('disabled');
   }
   stopVoices() { for(const voice of this.voices)voice.stop();this.voices.clear(); }
-  setMusic(key){if(key!==this.musicKey&&this.data.music[key])this.restart(key);}
-  restart(key=this.musicKey??'slum') {
+  setMusic(key){if(key!==this.musicKey&&this.data.music[key])this.restart(key,false);}
+  restart(key=this.musicKey??'slum',stopEffects=true) {
     this.musicKey=key;
-    this.stopVoices();this.music?.stop();this.music=null;
+    if(stopEffects)this.stopVoices();this.music?.stop();this.music=null;
     if(!this.enabled||!this.ready)return;
     const record=this.data.music[this.musicKey]??this.data.music.slum,buffer=this.buffers.get(record.file);
     const source=this.context.createBufferSource();source.buffer=buffer;

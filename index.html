@@ -3,11 +3,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Final Fight — native JavaScript</title>
-<link rel="stylesheet" href="style.css?v=4d9b688507">
+<link rel="stylesheet" href="style.css?v=65c11d1bb4">
 <main>
 <header><h1>FINAL FIGHT</h1><p>Native JavaScript</p></header>
 <div class="toolbar"><label>Character <select id="character"><option>Guy</option><option>Cody</option><option>Haggar</option></select></label><button id="reset">New game</button><button id="pause">Pause</button><button id="audio" disabled>Enable audio</button><button id="continue" hidden>Continue</button></div>
 <canvas id="game" width="384" height="224" tabindex="0" aria-label="Final Fight. Arrow keys move, Z punches, X jumps. Fight through the Slum and head right."></canvas>
+<div class="level-picker"><label for="level">Level <select id="level" aria-label="Level"><optgroup label="Slum"><option value="0:0">Street and opening</option><option value="0:1">Underground room</option><option value="0:2">Rooftop · Damnd</option></optgroup><optgroup label="Subway"><option value="1:0">Station</option><option value="1:1">Train carriage</option><option value="1:2">Underground platform</option><option value="1:3">Sodom</option></optgroup></select></label><button id="start-level" disabled>Start level</button></div>
 <p id="status" role="status">Loading game…</p>
 <p id="combat-status" role="status"></p>
 <p id="audio-status" role="status">Audio off.</p>
@@ -18,5 +19,5 @@
 <p class="scope">Play through the Slum, Damnd and the Subway station, train, platform and Sodom fight. Pick up knives, pipes and katanas with the attack button. More encounters, scenery events, section cutscenes, later stages and complete audio remain in development.</p>
 </main>
 <script>window.addEventListener('error',event=>console.error('Game startup/runtime error:',event.message||'module resource failed',event.filename||''));</script>
-<script type="module" src="app.js?v=4d9b688507" onerror="document.querySelector('#status').textContent='Game code could not load. Reload the page to retry.'"></script>
+<script type="module" src="app.js?v=65c11d1bb4" onerror="document.querySelector('#status').textContent='Game code could not load. Reload the page to retry.'"></script>
 </html>

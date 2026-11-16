@@ -1,5 +1,5 @@
-import{Animation}from'./animation.js?v=4d9b688507';
-import{resolveBoxes,boxesOverlap}from'./combat.js?v=4d9b688507';
+import{Animation}from'./animation.js?v=65c11d1bb4';
+import{resolveBoxes,boxesOverlap}from'./combat.js?v=65c11d1bb4';
 const word=n=>n<<16>>16;
 export class Knife{
  constructor(data,holder){
@@ -30,6 +30,7 @@ export class Knife{
    if(blocked===4){this.mode='spent';return;}
    if(blocked>0){this.facing^=1;this.mode='dropInit';this.onSound?.(15);return;}
    if(world.frame&1)for(const target of this.targets(world,player))if(target.mode!=='dead'&&Math.abs(word((this.groundY>>16)-(target.groundY>>16)))<=9&&boxesOverlap(this.lastAttack,resolveBoxes(target,this.data.images[target.animation.image]).hurt)){
+    world.spawnImpact?.(this.lastAttack,resolveBoxes(target,this.data.images[target.animation.image]).hurt,this.owner?.characterIndex===2?0:3,this.facing,target);
     target.hit(this.damage(),3,this.facing,{unblockable:true,guardContact:true});target.hitAttacker=this;this.projectileHit(world,target);this.onSound?.(16);this.mode='spent';return;
    }
    this.animation.tick();

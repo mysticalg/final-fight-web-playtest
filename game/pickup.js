@@ -1,4 +1,4 @@
-import{Animation}from'./animation.js?v=4d9b688507';
+import{Animation}from'./animation.js?v=65c11d1bb4';
 const word=n=>n<<16>>16;
 const integerY=(actor,value)=>{actor.y=((value<<16)|(actor.y&65535))|0;};
 

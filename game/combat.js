@@ -1,4 +1,4 @@
-// Source: 00328A–003346, 0078F4–007944, 00799A–0079C4.
+// Source: 00328Aâ€“003346, 0078F4â€“007944, 00799Aâ€“0079C4.
 const word = value => (value << 16) >> 16;
 export function resolveBoxes(actor,image) {
   const table=actor.combat;
@@ -46,7 +46,9 @@ export function contact(data,player,enemy,{queued=false}={}) {
   let hitFrom=special?(((player.x>>16)&65535)>((enemy.x>>16)&65535)?1:0):player.facing;
   if(enemy.isProp&&!special&&player.characterIndex===2&&image.attackIndex===14)hitFrom^=1;
   enemy.hit(attackDamage(player.combat,attack,enemy.defenseIndex),attack.reaction,hitFrom,{unblockable:attack.unblockable,guardContact:true});
+  player.onImpact?.(attack,hurt,player.weapon&&player.characterIndex!==2?3:0,player.facing,enemy);
   if(enemy.isProp){enemy.owner=player.playerIndex??0;player.sound?.(enemy.subtype===8?22:[4,6].includes(enemy.subtype)?23:24);player.hitStop=6;if(enemy.subtype!==1||enemy.appearance<2){player.comboWindow=45;player.escapeHit=true;}return true;}
+  player.onContactScore?.(attack);
   if(!(enemy.character.family===2&&enemy.guardReady))player.sound?.(attack.sound);
   player.hitStop=6;
   player.comboWindow=45;
@@ -83,6 +85,7 @@ export function incomingContact(data,enemy,player,{queued=false}={}) {
   const hurt=resolveBoxes(player,data.images[player.animation.image]).hurt;
   if(!boxesOverlap(attack,hurt))return false;
   // 007526 / 007592 uses 0079C6 (base damage, without defense adjustment).
+  player.onImpact?.(attack,hurt,1,enemy.facing,player);
   player.hit(attackDamage(enemy.combat,attack),attack.reaction,enemy.facing);
   player.hitAttacker=enemy;
   enemy.sound?.(attack.sound);
